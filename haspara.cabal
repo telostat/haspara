@@ -1,0 +1,88 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           haspara
+version:        0.0.0.0
+description:    Please see the README on GitHub at <https://github.com/telostat/haspara#readme>
+homepage:       https://github.com/telostat/haspara#readme
+bug-reports:    https://github.com/telostat/haspara/issues
+author:         Vehbi Sinan Tunalioglu
+maintainer:     vst@vsthost.com
+copyright:      Copyright (c) 2021 Telostat Pte Ltd
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/telostat/haspara
+
+library
+  exposed-modules:
+      Haspara
+      Haspara.Currency
+      Haspara.Date
+      Haspara.FXQuote
+      Haspara.Id
+      Haspara.Internal.Currency
+      Haspara.Internal.Date
+      Haspara.Internal.FXQuote
+      Haspara.Internal.FXQuoteDatabase
+      Haspara.Internal.Id
+      Haspara.Internal.Money
+      Haspara.Internal.Quantity
+      Haspara.Money
+      Haspara.Quantity
+      Haspara.TH
+  other-modules:
+      Paths_haspara
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base >=4.11 && <5
+    , hashable
+    , megaparsec
+    , mtl
+    , refined
+    , safe-decimal
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , unordered-containers
+  default-language: Haskell2010
+
+test-suite haspara-doctest
+  type: exitcode-stdio-1.0
+  main-is: doctest.hs
+  other-modules:
+      Paths_haspara
+  hs-source-dirs:
+      test
+  ghc-options: -threaded
+  build-depends:
+      aeson
+    , base >=4.11 && <5
+    , doctest
+    , hashable
+    , haspara
+    , megaparsec
+    , mtl
+    , refined
+    , safe-decimal
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , unordered-containers
+  default-language: Haskell2010

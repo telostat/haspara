@@ -1,0 +1,44 @@
+name:               haspara
+version:            0.0.0.0
+github:             "telostat/haspara"
+license:            MIT
+author:             "Vehbi Sinan Tunalioglu"
+maintainer:         "vst@vsthost.com"
+copyright:          "Copyright (c) 2021 Telostat Pte Ltd"
+
+description:        Please see the README on GitHub at <https://github.com/telostat/haspara#readme>
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+dependencies:
+- base >= 4.11 && < 5
+- aeson
+- hashable
+- megaparsec
+- mtl
+- refined
+- safe-decimal
+- scientific
+- template-haskell
+- text
+- time
+- unordered-containers
+
+library:
+  source-dirs:      src
+  ghc-options:
+  - -Wall
+  default-extensions:
+  - OverloadedStrings
+
+tests:
+  haspara-doctest:
+    main:           doctest.hs
+    source-dirs:    test
+    ghc-options:
+    - -threaded
+    dependencies:
+    - haspara
+    - doctest
