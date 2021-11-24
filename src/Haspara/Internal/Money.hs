@@ -3,13 +3,16 @@
 
 module Haspara.Internal.Money where
 
-import Data.Scientific           (Scientific)
-import GHC.TypeLits              (KnownNat, Nat)
-import Haspara.Internal.Currency (Currency, baseCurrency, quoteCurrency)
-import Haspara.Internal.Date     (Date)
-import Haspara.Internal.FXQuote  (FXQuote(fxQuotePair, fxQuoteRate))
-import Haspara.Internal.Quantity (Quantity, quantity, times)
-import Refined                   (unrefine)
+import           Control.Applicative       ((<|>))
+import           Data.Aeson                ((.:), (.=))
+import qualified Data.Aeson                as Aeson
+import           Data.Scientific           (Scientific)
+import           GHC.TypeLits              (KnownNat, Nat)
+import           Haspara.Internal.Currency (Currency, baseCurrency, quoteCurrency)
+import           Haspara.Internal.Date     (Date)
+import           Haspara.Internal.FXQuote  (FXQuote(fxQuotePair, fxQuoteRate))
+import           Haspara.Internal.Quantity (Quantity, quantity, times)
+import           Refined                   (unrefine)
 
 
 data Money (s :: Nat) =
@@ -17,6 +20,41 @@ data Money (s :: Nat) =
   | MoneyZero
   | MoneyFail String
   deriving (Eq, Ord, Show)
+
+
+-- | 'Aeson.FromJSON' instance for 'Money'.
+--
+-- >>> Aeson.decode "{\"qty\":42,\"ccy\":\"USD\",\"date\":\"2021-01-01\"}" :: Maybe (Money 2)
+-- Just (MoneySome 2021-01-01 USD 42.00)
+-- >>> Aeson.decode "0" :: Maybe (Money 2)
+-- Just MoneyZero
+-- >>> Aeson.decode "{\"error\": \"oops\"}" :: Maybe (Money 2)
+-- Just (MoneyFail "oops")
+instance (KnownNat s) => Aeson.FromJSON (Money s) where
+  parseJSON (Aeson.Number 0) = pure MoneyZero
+  parseJSON (Aeson.Object obj) = parseSome obj <|> parseFail obj
+    where
+      parseSome o = MoneySome
+        <$> o .: "date"
+        <*> o .: "ccy"
+        <*> o .: "qty"
+      parseFail o = MoneyFail <$> o .: "error"
+  parseJSON x = fail ("Not a monetary value: " <> show x)
+
+
+
+-- | 'Aeson.ToJSON' instance for 'Money'.
+--
+-- >>> Aeson.encode (MoneySome (read "2021-01-01") ("USD" :: Currency) (42 :: Quantity 0))
+-- "{\"qty\":42,\"ccy\":\"USD\",\"date\":\"2021-01-01\"}"
+-- >>> Aeson.encode (MoneyZero :: Money 2)
+-- "0"
+-- >>> Aeson.encode (MoneyFail "oops" :: Money 2)
+-- "{\"error\":\"oops\"}"
+instance (KnownNat s) => Aeson.ToJSON (Money s) where
+  toJSON (MoneySome d c q) = Aeson.object [ "date" .= d, "ccy" .= c, "qty" .= q ]
+  toJSON MoneyZero         = Aeson.Number 0
+  toJSON (MoneyFail s)     = Aeson.object ["error" .= s]
 
 
 mkMoney :: KnownNat s => Date -> Currency -> Quantity s -> Money s
