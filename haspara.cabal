@@ -39,12 +39,10 @@ library
       Haspara.Currency
       Haspara.Date
       Haspara.FXQuote
-      Haspara.Id
       Haspara.Internal.Currency
       Haspara.Internal.Date
       Haspara.Internal.FXQuote
       Haspara.Internal.FXQuoteDatabase
-      Haspara.Internal.Id
       Haspara.Internal.Money
       Haspara.Internal.Quantity
       Haspara.Money
