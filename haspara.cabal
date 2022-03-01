@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           haspara
-version:        0.0.0.0
+version:        0.0.0.1
 synopsis:       A library providing definitions to work with monetary values.
 description:    Please see the README on GitHub at <https://github.com/telostat/haspara#readme>
 category:       Finance
@@ -28,6 +28,14 @@ source-repository head
 library
   exposed-modules:
       Haspara
+      Haspara.Accounting
+      Haspara.Accounting.Account
+      Haspara.Accounting.AccountKind
+      Haspara.Accounting.Entry
+      Haspara.Accounting.Event
+      Haspara.Accounting.Ledger
+      Haspara.Accounting.Posting
+      Haspara.Accounting.Types
       Haspara.Currency
       Haspara.Date
       Haspara.FXQuote
@@ -52,6 +60,7 @@ library
   build-depends:
       aeson
     , base >=4.11 && <5
+    , deriving-aeson
     , hashable
     , megaparsec
     , mtl
@@ -75,6 +84,7 @@ test-suite haspara-doctest
   build-depends:
       aeson
     , base >=4.11 && <5
+    , deriving-aeson
     , doctest
     , hashable
     , haspara

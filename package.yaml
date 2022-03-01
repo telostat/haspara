@@ -1,5 +1,5 @@
 name:               haspara
-version:            0.0.0.0
+version:            0.0.0.1
 github:             "telostat/haspara"
 license:            MIT
 author:             "Vehbi Sinan Tunalioglu"
@@ -17,6 +17,7 @@ extra-source-files:
 dependencies:
 - base >= 4.11 && < 5
 - aeson
+- deriving-aeson
 - hashable
 - megaparsec
 - mtl
