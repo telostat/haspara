@@ -17,6 +17,7 @@ extra-source-files:
 dependencies:
 - base >= 4.11 && < 5
 - aeson
+- containers
 - deriving-aeson
 - hashable
 - megaparsec
@@ -27,7 +28,6 @@ dependencies:
 - template-haskell
 - text
 - time
-- unordered-containers
 
 library:
   source-dirs:      src

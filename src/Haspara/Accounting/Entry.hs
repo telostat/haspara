@@ -7,6 +7,7 @@ import           Data.Aeson                     ((.:), (.=))
 import qualified Data.Aeson                     as Aeson
 import qualified Data.Char                      as C
 import qualified Data.Text                      as T
+import           Data.Time                      (Day)
 import           GHC.TypeLits                   (KnownNat, Nat)
 import qualified Haspara                        as H
 import           Haspara.Accounting.AccountKind (AccountKind(..))
@@ -25,14 +26,14 @@ import           Refined                        (unrefine)
 -- >>> let entry = EntryDebit date oid qty
 -- >>> let json = Aeson.encode entry
 -- >>> json
--- "{\"qty\":42.0,\"obj\":1,\"date\":\"2021-01-01\",\"type\":\"DEBIT\"}"
+-- "{\"qty\":42.0,\"type\":\"DEBIT\",\"obj\":1,\"date\":\"2021-01-01\"}"
 -- >>> Aeson.decode json :: Maybe (Entry Int 2)
 -- Just (EntryDebit 2021-01-01 1 (Refined 42.00))
 -- >>> Aeson.decode json == Just entry
 -- True
 data Entry o (s :: Nat) =
-    EntryDebit H.Date o (UnsignedQuantity s)
-  | EntryCredit H.Date o (UnsignedQuantity s)
+    EntryDebit Day o (UnsignedQuantity s)
+  | EntryCredit Day o (UnsignedQuantity s)
   deriving (Eq, Ord, Show)
 
 
@@ -55,7 +56,7 @@ instance (Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Entry o s) where
     EntryCredit d o q -> Aeson.object ["type" .= ("CREDIT" :: T.Text), "date" .= d, "obj" .= o, "qty" .= q]
 
 
-entryDate :: KnownNat s => Entry o s -> H.Date
+entryDate :: KnownNat s => Entry o s -> Day
 entryDate (EntryDebit d _ _)  = d
 entryDate (EntryCredit d _ _) = d
 

@@ -9,6 +9,7 @@ import           Data.Aeson               ((.:), (.=))
 import qualified Data.Aeson               as Aeson
 import qualified Data.Char                as C
 import qualified Data.Text                as T
+import           Data.Time                (Day)
 import           GHC.TypeLits             (KnownNat, Nat)
 import qualified Haspara                  as H
 import           Haspara.Accounting.Types (UnsignedQuantity)
@@ -25,14 +26,14 @@ import           Refined                  (refine)
 -- >>> let event = EventDecrement date oid qty
 -- >>> let json = Aeson.encode event
 -- >>> json
--- "{\"qty\":42.0,\"obj\":1,\"date\":\"2021-01-01\",\"type\":\"DECREMENT\"}"
+-- "{\"qty\":42.0,\"type\":\"DECREMENT\",\"obj\":1,\"date\":\"2021-01-01\"}"
 -- >>> Aeson.decode json :: Maybe (Event Int 2)
 -- Just (EventDecrement 2021-01-01 1 (Refined 42.00))
 -- >>> Aeson.decode json == Just event
 -- True
 data Event o (s :: Nat) =
-    EventDecrement H.Date o (UnsignedQuantity s)
-  | EventIncrement H.Date o (UnsignedQuantity s)
+    EventDecrement Day o (UnsignedQuantity s)
+  | EventIncrement Day o (UnsignedQuantity s)
   deriving (Eq, Ord, Show)
 
 
@@ -55,7 +56,7 @@ instance (Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Event o s) where
     EventIncrement d o q -> Aeson.object ["type" .= ("INCREMENT" :: T.Text), "date" .= d, "obj" .= o, "qty" .= q]
 
 
-eventDate :: (KnownNat s) => Event o s -> H.Date
+eventDate :: (KnownNat s) => Event o s -> Day
 eventDate (EventDecrement d _ _) = d
 eventDate (EventIncrement d _ _) = d
 
@@ -70,7 +71,7 @@ negateEvent (EventDecrement d o x) = EventIncrement d o x
 negateEvent (EventIncrement d o x) = EventDecrement d o x
 
 
-mkEvent :: (MonadError String m, KnownNat s) => H.Date -> o -> H.Quantity s -> m (Event o s)
+mkEvent :: (MonadError String m, KnownNat s) => Day -> o -> H.Quantity s -> m (Event o s)
 mkEvent d o x
   | x < 0     = either (throwError . show) pure $ EventDecrement d o <$> refine (abs x)
   | otherwise = either (throwError . show) pure $ EventIncrement d o <$> refine (abs x)

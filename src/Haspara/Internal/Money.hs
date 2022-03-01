@@ -7,16 +7,16 @@ import           Control.Applicative       ((<|>))
 import           Data.Aeson                ((.:), (.=))
 import qualified Data.Aeson                as Aeson
 import           Data.Scientific           (Scientific)
+import           Data.Time                 (Day)
 import           GHC.TypeLits              (KnownNat, Nat)
 import           Haspara.Internal.Currency (Currency, baseCurrency, quoteCurrency)
-import           Haspara.Internal.Date     (Date)
 import           Haspara.Internal.FXQuote  (FXQuote(fxQuotePair, fxQuoteRate))
 import           Haspara.Internal.Quantity (Quantity, quantity, times)
 import           Refined                   (unrefine)
 
 
 data Money (s :: Nat) =
-    MoneySome Date Currency (Quantity s)
+    MoneySome Day Currency (Quantity s)
   | MoneyZero
   | MoneyFail String
   deriving (Eq, Ord, Show)
@@ -57,15 +57,15 @@ instance (KnownNat s) => Aeson.ToJSON (Money s) where
   toJSON (MoneyFail s)     = Aeson.object ["error" .= s]
 
 
-mkMoney :: KnownNat s => Date -> Currency -> Quantity s -> Money s
+mkMoney :: KnownNat s => Day -> Currency -> Quantity s -> Money s
 mkMoney = MoneySome
 
 
-mkMoneyFromScientific :: KnownNat s => Date -> Currency -> Scientific -> Money s
+mkMoneyFromScientific :: KnownNat s => Day -> Currency -> Scientific -> Money s
 mkMoneyFromScientific d c s = mkMoney d c (quantity s)
 
 
-moneyDate :: KnownNat s => Money s -> Maybe Date
+moneyDate :: KnownNat s => Money s -> Maybe Day
 moneyDate (MoneySome d _ _) = Just d
 moneyDate MoneyZero         = Nothing
 moneyDate (MoneyFail _)     = Nothing
@@ -89,7 +89,7 @@ moneyQuantity (MoneyFail _)     = Nothing
 -- >>> import Haspara
 -- >>> let eur = either error id $ currency "EUR"
 -- >>> let usd = either error id $ currency "USD"
--- >>> let date = read "2021-01-01" :: Date
+-- >>> let date = read "2021-01-01" :: Day
 -- >>> let eurmoney = mkMoney date eur (quantity 0.42 :: Quantity 2) :: Money 2
 -- >>> convert eurmoney eur (quantity 1 :: Quantity 4)
 -- MoneySome 2021-01-01 EUR 0.42

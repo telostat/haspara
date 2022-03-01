@@ -30,7 +30,7 @@ import           Haspara.Accounting.Event   (Event, eventObject)
 -- >>> let posting =  Posting . NE.fromList $ [(event, account)]
 -- >>> let json = Aeson.encode posting
 -- >>> json
--- "[[{\"qty\":42.0,\"obj\":1,\"date\":\"2021-01-01\",\"type\":\"DECREMENT\"},{\"kind\":\"ASSET\",\"object\":[\"Cash\",1]}]]"
+-- "[[{\"qty\":42.0,\"type\":\"DECREMENT\",\"obj\":1,\"date\":\"2021-01-01\"},{\"kind\":\"ASSET\",\"object\":[\"Cash\",1]}]]"
 -- >>> Aeson.decode json :: Maybe (Posting (String, Int) Int 2)
 -- Just (Posting ((EventDecrement 2021-01-01 1 (Refined 42.00),Account {accountKind = AccountKindAsset, accountObject = ("Cash",1)}) :| []))
 -- >>> Aeson.decode json == Just posting
