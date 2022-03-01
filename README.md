@@ -14,6 +14,6 @@ with monetary values.
 
 ## License
 
-Copyright Telostat Pte Ltd (c) 2021.
+Copyright Telostat Pte Ltd (c) 2021-2022.
 
 This work is licensed under MIT license. See [LICENSE](./LICENSE).

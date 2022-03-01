@@ -11,7 +11,7 @@ homepage:       https://github.com/telostat/haspara#readme
 bug-reports:    https://github.com/telostat/haspara/issues
 author:         Vehbi Sinan Tunalioglu
 maintainer:     vst@vsthost.com
-copyright:      Copyright (c) 2021 Telostat Pte Ltd
+copyright:      Copyright (c) 2021-2022 Telostat Pte Ltd
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
