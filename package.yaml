@@ -6,6 +6,8 @@ author:             "Vehbi Sinan Tunalioglu"
 maintainer:         "vst@vsthost.com"
 copyright:          "Copyright (c) 2021-2022 Telostat Pte Ltd"
 
+category:           Finance
+synopsis:           A library providing definitions to work with monetary values.
 description:        Please see the README on GitHub at <https://github.com/telostat/haspara#readme>
 
 extra-source-files:

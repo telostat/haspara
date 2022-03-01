@@ -6,7 +6,9 @@ cabal-version: 1.12
 
 name:           haspara
 version:        0.0.0.0
+synopsis:       A library providing definitions to work with monetary values.
 description:    Please see the README on GitHub at <https://github.com/telostat/haspara#readme>
+category:       Finance
 homepage:       https://github.com/telostat/haspara#readme
 bug-reports:    https://github.com/telostat/haspara/issues
 author:         Vehbi Sinan Tunalioglu
