@@ -48,7 +48,7 @@ library
       src
   default-extensions:
       OverloadedStrings
-  ghc-options: -Wall
+  ghc-options: -Wall -Wunused-packages
   build-depends:
       aeson
     , base >=4.11 && <5

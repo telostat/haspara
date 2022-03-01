@@ -32,6 +32,7 @@ library:
   source-dirs:      src
   ghc-options:
   - -Wall
+  - -Wunused-packages
   default-extensions:
   - OverloadedStrings
 
