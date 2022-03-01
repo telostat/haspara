@@ -4,8 +4,10 @@ github:             "telostat/haspara"
 license:            MIT
 author:             "Vehbi Sinan Tunalioglu"
 maintainer:         "vst@vsthost.com"
-copyright:          "Copyright (c) 2021 Telostat Pte Ltd"
+copyright:          "Copyright (c) 2021-2022 Telostat Pte Ltd"
 
+category:           Finance
+synopsis:           A library providing definitions to work with monetary values.
 description:        Please see the README on GitHub at <https://github.com/telostat/haspara#readme>
 
 extra-source-files:
@@ -30,6 +32,7 @@ library:
   source-dirs:      src
   ghc-options:
   - -Wall
+  - -Wunused-packages
   default-extensions:
   - OverloadedStrings
 
