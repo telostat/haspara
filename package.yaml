@@ -17,6 +17,7 @@ extra-source-files:
 dependencies:
 - base >= 4.11 && < 5
 - aeson
+- deriving-aeson
 - hashable
 - megaparsec
 - mtl
