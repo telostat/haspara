@@ -28,6 +28,14 @@ source-repository head
 library
   exposed-modules:
       Haspara
+      Haspara.Accounting
+      Haspara.Accounting.Account
+      Haspara.Accounting.AccountKind
+      Haspara.Accounting.Entry
+      Haspara.Accounting.Event
+      Haspara.Accounting.Ledger
+      Haspara.Accounting.Posting
+      Haspara.Accounting.Types
       Haspara.Currency
       Haspara.Date
       Haspara.FXQuote
@@ -52,6 +60,7 @@ library
   build-depends:
       aeson
     , base >=4.11 && <5
+    , deriving-aeson
     , hashable
     , megaparsec
     , mtl
@@ -75,6 +84,7 @@ test-suite haspara-doctest
   build-depends:
       aeson
     , base >=4.11 && <5
+    , deriving-aeson
     , doctest
     , hashable
     , haspara
