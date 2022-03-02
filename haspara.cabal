@@ -38,11 +38,6 @@ library
       Haspara.Accounting.Types
       Haspara.Currency
       Haspara.FXQuote
-      Haspara.Internal.Currency
-      Haspara.Internal.FXQuote
-      Haspara.Internal.FXQuoteDatabase
-      Haspara.Internal.Money
-      Haspara.Internal.Quantity
       Haspara.Money
       Haspara.Quantity
       Haspara.TH
