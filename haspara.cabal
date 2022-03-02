@@ -37,7 +37,7 @@ library
       Haspara.Accounting.Posting
       Haspara.Accounting.Types
       Haspara.Currency
-      Haspara.FXQuote
+      Haspara.FxQuote
       Haspara.Money
       Haspara.Quantity
       Haspara.TH

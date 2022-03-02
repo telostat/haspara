@@ -12,7 +12,7 @@ import           Data.Scientific     (Scientific)
 import           Data.Time           (Day)
 import           GHC.TypeLits        (KnownNat, Nat)
 import           Haspara.Currency    (Currency, CurrencyPair(currencyPairBase, currencyPairQuote))
-import           Haspara.FXQuote     (FXQuote(fxQuotePair, fxQuoteRate))
+import           Haspara.FxQuote     (FxQuote(fxQuotePair, fxQuoteRate))
 import           Haspara.Quantity    (Quantity, mkQuantity, times)
 import           Refined             (unrefine)
 
@@ -107,8 +107,8 @@ convert x@(MoneySome d cbase q) cquot rate
 
 
 -- | Converts the given 'Money' value to another currency with the given
--- 'FXQuote'.
-convertWithQuote :: (KnownNat s, KnownNat k) => Money s -> FXQuote k -> Money s
+-- 'FxQuote'.
+convertWithQuote :: (KnownNat s, KnownNat k) => Money s -> FxQuote k -> Money s
 convertWithQuote MoneyZero _                    = MoneyZero
 convertWithQuote x@(MoneyFail _) _              = x
 convertWithQuote x@(MoneySome _ cbase _) quote

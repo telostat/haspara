@@ -1,11 +1,11 @@
 module Haspara
   ( module Haspara.Currency
-  , module Haspara.FXQuote
+  , module Haspara.FxQuote
   , module Haspara.Money
   , module Haspara.Quantity
   ) where
 
 import Haspara.Currency
-import Haspara.FXQuote
+import Haspara.FxQuote
 import Haspara.Money
 import Haspara.Quantity
