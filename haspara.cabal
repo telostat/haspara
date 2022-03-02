@@ -38,7 +38,7 @@ library
       Haspara.Accounting.Types
       Haspara.Currency
       Haspara.FxQuote
-      Haspara.Money
+      Haspara.Monetary
       Haspara.Quantity
       Haspara.TH
   other-modules:
@@ -89,6 +89,7 @@ library
     , base >=4.11 && <5
     , containers
     , deriving-aeson
+    , exceptions
     , hashable
     , megaparsec
     , mtl
@@ -114,6 +115,7 @@ test-suite haspara-doctest
     , containers
     , deriving-aeson
     , doctest
+    , exceptions
     , hashable
     , haspara
     , megaparsec

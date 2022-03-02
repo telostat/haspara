@@ -31,7 +31,7 @@ import           Refined              (Positive, Refined, refineError)
 -- 3. a (positive) rate as the value of the quotation.
 --
 -- >>>
-data FxQuote (s :: Nat) = MkFXQuote
+data FxQuote (s :: Nat) = MkFxQuote
   { fxQuotePair :: !CurrencyPair  -- ^ Currency pair of the FX rate.
   , fxQuoteDate :: !Day  -- ^ Actual date of the FX rate.
   , fxQuoteRate :: !(Refined Positive (Quantity s))  -- ^ (Positive) rate value of the FX rate.
@@ -47,7 +47,7 @@ data FxQuote (s :: Nat) = MkFXQuote
 -- throw an error.
 --
 -- >>> mkFxQuoteError @(Either _) @2 (read "2021-12-31") "EUR" "USD" 1.16
--- Right (MkFXQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16})
+-- Right (MkFxQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16})
 -- >>> mkFxQuoteError @(Either _) @2 (read "2021-12-31") "EUR" "USD" (-1.16)
 -- Left "Can not create FX Rate. Error was:   The predicate (GreaterThan 0) failed with the message: Value is not greater than 0\n"
 mkFxQuoteError
@@ -61,7 +61,7 @@ mkFxQuoteError
 mkFxQuoteError date ccy1 ccy2 rate =
   either (throwError . (<>) "Can not create FX Rate. Error was: ") pure $ do
     pval <- either (Left . T.pack . show) pure $ refineError (mkQuantity rate)
-    pure $ MkFXQuote (CurrencyPair ccy1 ccy2) date pval
+    pure $ MkFxQuote (CurrencyPair ccy1 ccy2) date pval
 
 
 -- | Smart constructor for 'FxQuote' values within 'MonadFail' context.
@@ -69,7 +69,7 @@ mkFxQuoteError date ccy1 ccy2 rate =
 -- The rate is expected to be a positive value. If it is not, the function will
 -- fail.
 -- >>> mkFxQuoteFail @Maybe @2 (read "2021-12-31") "EUR" "USD" 1.16
--- Just (MkFXQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16})
+-- Just (MkFxQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16})
 -- >>> mkFxQuoteFail @Maybe @2 (read "2021-12-31") "EUR" "USD" (-1.16)
 -- Nothing
 mkFxQuoteFail
@@ -87,7 +87,7 @@ mkFxQuoteFail date ccy1 ccy2 =
 -- | Unsafe 'FxQuote' constructor that 'error's if it fails.
 --
 -- >>> mkFxQuoteUnsafe @2 (read "2021-12-31") "EUR" "USD" 1.16
--- MkFXQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16}
+-- MkFxQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16}
 -- >>> mkFxQuoteUnsafe @2 (read "2021-12-31") "EUR" "USD" (-1.16)
 -- ...
 -- ...Can not create FX Rate. Error was:   The predicate (GreaterThan 0) failed with the message: Value is not greater than 0
