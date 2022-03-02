@@ -1,5 +1,8 @@
 -- | This module provides definitions for modeling and working with currencies.
 
+{-# LANGUAGE DataKinds   #-}
+{-# LANGUAGE DerivingVia #-}
+
 module Haspara.Currency where
 
 import           Control.Monad.Except       (MonadError(throwError))
@@ -8,24 +11,34 @@ import           Data.Hashable              (Hashable)
 import           Data.String                (IsString(..))
 import qualified Data.Text                  as T
 import           Data.Void                  (Void)
+import qualified Deriving.Aeson.Stock       as DAS
 import qualified Language.Haskell.TH.Syntax as TH
 import qualified Text.Megaparsec            as MP
 
 
--- * Data Definition
--- &definition
+-- * Currency
+-- $currency
 
--- | Type encoding for currencies.
+
+-- | Type encoding for currency symbol values with a syntax of @[A-Z]{3}[A-Z]*@.
+--
+-- 'Currency' values can be constructed via 'mkCurrencyError' that works in
+-- @'MonadError' 'T.Text'@ context:
+--
+-- >>> mkCurrencyError "EUR" :: Either T.Text Currency
+-- Right EUR
+--
+-- ... or via 'mkCurrencyFail' that works in 'MonadFail' context:
+--
+-- >>> mkCurrencyFail "EUR" :: Maybe Currency
+-- Just EUR
+--
+-- An 'IsString' instance is provided as well which is unsafe but convenient:
+--
+-- >>> "EUR" :: Currency
+-- EUR
 newtype Currency = MkCurrency { currencyCode :: T.Text }
   deriving (Eq, Hashable, Ord, TH.Lift)
-
-
--- | 'Show' instance for 'Currency'.
---
--- >>> MkCurrency "USD"
--- USD
-instance Show Currency where
-  show (MkCurrency x) = T.unpack x
 
 
 -- | 'IsString' instance for 'Currency'.
@@ -33,66 +46,72 @@ instance Show Currency where
 -- >>> "USD" :: Currency
 -- USD
 instance IsString Currency where
-  fromString =  either error id . currency . T.pack
+  fromString =  either (error . T.unpack) id . mkCurrencyError . T.pack
+
+
+-- | 'Show' instance for 'Currency'.
+--
+-- >>> "USD" :: Currency
+-- USD
+instance Show Currency where
+  show (MkCurrency x) = T.unpack x
 
 
 -- | 'Aeson.FromJSON' instance for 'Currency'.
 --
 -- >>> Aeson.eitherDecode "\"\"" :: Either String Currency
--- Left "Error in $: Currency code error! Expecting at least 3 uppercase characters, but received: \"\""
+-- Left "Error in $: Currency code error! Expecting at least 3 uppercase ASCII letters, but received: "
+-- >>> Aeson.eitherDecode "\"A\"" :: Either String Currency
+-- Left "Error in $: Currency code error! Expecting at least 3 uppercase ASCII letters, but received: A"
+-- >>> Aeson.eitherDecode "\"AB\"" :: Either String Currency
+-- Left "Error in $: Currency code error! Expecting at least 3 uppercase ASCII letters, but received: AB"
 -- >>> Aeson.eitherDecode "\"ABC\"" :: Either String Currency
 -- Right ABC
+-- >>> Aeson.eitherDecode "\"ABCD\"" :: Either String Currency
+-- Right ABCD
 instance Aeson.FromJSON Currency where
-  parseJSON = Aeson.withText "Currency" $ either fail pure . currency
+  parseJSON = Aeson.withText "Currency" $ either (fail . T.unpack) pure . mkCurrencyError
 
 
 -- | 'Aeson.ToJSON' instance for 'Currency'.
 --
--- >>> Aeson.encode (MkCurrency "USD")
+-- >>> Aeson.encode ("USD" :: Currency)
 -- "\"USD\""
 instance Aeson.ToJSON Currency where
   toJSON (MkCurrency c) = Aeson.String c
 
 
--- * Constructors
--- &constructors
-
-
 -- | Smart constructor for 'Currency' values within 'MonadError' context.
 --
--- >>> currency "" :: Either String Currency
--- Left "Currency code error! Expecting at least 3 uppercase characters, but received: \"\""
--- >>> currency " " :: Either String Currency
--- Left "Currency code error! Expecting at least 3 uppercase characters, but received: \" \""
--- >>> currency "AB" :: Either String Currency
--- Left "Currency code error! Expecting at least 3 uppercase characters, but received: \"AB\""
--- >>> currency " ABC " :: Either String Currency
--- Left "Currency code error! Expecting at least 3 uppercase characters, but received: \" ABC \""
--- >>> currency "ABC" :: Either String Currency
+-- >>> mkCurrencyError "" :: Either T.Text Currency
+-- Left "Currency code error! Expecting at least 3 uppercase ASCII letters, but received: "
+-- >>> mkCurrencyError " " :: Either T.Text Currency
+-- Left "Currency code error! Expecting at least 3 uppercase ASCII letters, but received:  "
+-- >>> mkCurrencyError "AB" :: Either T.Text Currency
+-- Left "Currency code error! Expecting at least 3 uppercase ASCII letters, but received: AB"
+-- >>> mkCurrencyError " ABC " :: Either T.Text Currency
+-- Left "Currency code error! Expecting at least 3 uppercase ASCII letters, but received:  ABC "
+-- >>> mkCurrencyError "ABC" :: Either T.Text Currency
 -- Right ABC
-currency :: MonadError String m => T.Text -> m Currency
-currency x = either
-  (const . throwError $ "Currency code error! Expecting at least 3 uppercase characters, but received: " <> show x)
+mkCurrencyError :: MonadError T.Text m => T.Text -> m Currency
+mkCurrencyError x = either
+  (const . throwError $ "Currency code error! Expecting at least 3 uppercase ASCII letters, but received: " <> x)
   (pure . MkCurrency)
   (MP.runParser currencyCodeParser "Currency Code" x)
 
 
 -- | Smart constructor for 'Currency' values within 'MonadFail' context.
 --
--- >>> currencyFail "" :: Maybe Currency
+-- >>> mkCurrencyFail "" :: Maybe Currency
 -- Nothing
--- >>> currencyFail "US" :: Maybe Currency
+-- >>> mkCurrencyFail "US" :: Maybe Currency
 -- Nothing
--- >>> currencyFail "usd" :: Maybe Currency
+-- >>> mkCurrencyFail "usd" :: Maybe Currency
 -- Nothing
--- >>> currencyFail "USD" :: Maybe Currency
+-- >>> mkCurrencyFail "USD" :: Maybe Currency
 -- Just USD
-currencyFail :: MonadFail m => T.Text -> m Currency
-currencyFail = either fail pure . currency
-
-
--- * Auxiliaries
--- &auxiliaries
+mkCurrencyFail :: MonadFail m => T.Text -> m Currency
+mkCurrencyFail = either (fail . T.unpack) pure . mkCurrencyError
 
 
 -- | Parser that parses currency codes.
@@ -109,45 +128,63 @@ currencyFail = either fail pure . currency
 -- Left (ParseErrorBundle {bundleErrors = TrivialError 2 (Just EndOfInput) (fromList []) :| [], bundlePosState = PosState {pstateInput = "AB", pstateOffset = 0, pstateSourcePos = SourcePos {sourceName = "Example", sourceLine = Pos 1, sourceColumn = Pos 1}, pstateTabWidth = Pos 8, pstateLinePrefix = ""}})
 -- >>> MP.runParser currencyCodeParser "Example" "ABC"
 -- Right "ABC"
+-- >>> MP.runParser currencyCodeParser "Example" "ABCD"
+-- Right "ABCD"
+-- >>> MP.runParser currencyCodeParser "Example" " ABCD "
+-- Left (ParseErrorBundle {bundleErrors = TrivialError 0 (Just (Tokens (' ' :| ""))) (fromList []) :| [], bundlePosState = PosState {pstateInput = " ABCD ", pstateOffset = 0, pstateSourcePos = SourcePos {sourceName = "Example", sourceLine = Pos 1, sourceColumn = Pos 1}, pstateTabWidth = Pos 8, pstateLinePrefix = ""}})
 currencyCodeParser :: MP.Parsec Void T.Text T.Text
 currencyCodeParser = do
-  mandatory <- MP.count 3 parserChar
-  optionals <- MP.many parserChar
+  mandatory <- MP.count 3 validChar
+  optionals <- MP.many validChar
   pure . T.pack $ mandatory <> optionals
   where
-    validChars = ['A'..'Z']
-    parserChar = MP.oneOf validChars
+    validChar = MP.oneOf ['A'..'Z']
 
 
-newtype CurrencyPair = MkCurrencyPair { unCurrencyPair :: (Currency, Currency) }
-  deriving (Eq, Hashable, Ord, TH.Lift)
+-- * Currency Pair
+-- $currencyPair
 
 
--- | 'Show' instance for currency pairs.
+-- | Type encoding of a currency pair.
 --
--- >>> MkCurrencyPair ("EUR", "USD")
+-- 'CurrencyPair' values are constructed via the data constructor:
+--
+-- >>> CurrencyPair "EUR" "USD"
+-- EUR/USD
+--
+-- 'Aeson.FromJSON' and 'Aeson.ToJSON' instances are provided as well:
+--
+-- >>> Aeson.decode "{\"base\": \"EUR\", \"quote\": \"EUR\"}" :: Maybe CurrencyPair
+-- Just EUR/EUR
+-- >>> Aeson.encode (CurrencyPair "EUR" "USD")
+-- "{\"base\":\"EUR\",\"quote\":\"USD\"}"
+data CurrencyPair = CurrencyPair
+  { currencyPairBase  :: !Currency  -- ^ /Base currency/ of the currency pair. Also referred to as /counter currency/.
+  , currencyPairQuote :: !Currency  -- ^ /Quote currency/ of the currency pair. Also referred to as /transaction currency/.
+  }
+  deriving (Eq, DAS.Generic, Ord, TH.Lift)
+  deriving (DAS.FromJSON, DAS.ToJSON) via DAS.PrefixedSnake "currencyPair" CurrencyPair
+
+
+-- | 'Show' instance for 'CurrencyPair'.
+--
+-- >>> CurrencyPair "EUR" "USD"
 -- EUR/USD
 instance Show CurrencyPair where
-  show (MkCurrencyPair (x, y)) = show x <> "/" <> show y
+  show (CurrencyPair x y) = show x <> "/" <> show y
 
 
-toTuple :: CurrencyPair -> (Currency, Currency)
-toTuple = unCurrencyPair
+-- | Converts a 'CurrencyPair' to a 2-tuple of 'Currency' values.
+--
+-- >>> toCurrencyTuple (CurrencyPair "EUR" "USD")
+-- (EUR,USD)
+toCurrencyTuple :: CurrencyPair -> (Currency, Currency)
+toCurrencyTuple (CurrencyPair x y) = (x, y)
 
 
-baseCurrency :: CurrencyPair -> Currency
-baseCurrency = fst . unCurrencyPair
-
-
-quoteCurrency :: CurrencyPair -> Currency
-quoteCurrency = snd . unCurrencyPair
-
-
-currencyPair :: MonadError String m => Currency -> Currency -> m CurrencyPair
-currencyPair c1 c2
-  | c1 == c2 = throwError $ "Can not create currency pair from same currencies: " <> show c1 <> " and " <> show c2
-  | otherwise = pure (MkCurrencyPair (c1, c2))
-
-
-currencyPairFail :: MonadFail m => Currency -> Currency -> m CurrencyPair
-currencyPairFail = (either fail pure .) . currencyPair
+-- | Converts a 2-tuple of 'Currency' values to a 'CurrencyPair'.
+--
+-- >>> fromCurrencyTuple ("EUR", "USD")
+-- EUR/USD
+fromCurrencyTuple :: (Currency, Currency) -> CurrencyPair
+fromCurrencyTuple = uncurry CurrencyPair

@@ -11,7 +11,7 @@ import qualified Data.Map.Strict      as SM
 import           Data.Scientific      (Scientific)
 import           Data.Time            (Day, addDays)
 import           GHC.TypeLits         (KnownNat, Nat)
-import           Haspara.Currency     (Currency, CurrencyPair, baseCurrency, currencyPair, quoteCurrency)
+import           Haspara.Currency     (Currency, CurrencyPair(CurrencyPair, currencyPairBase, currencyPairQuote))
 import           Haspara.Quantity     (Quantity(..), quantity)
 import           Numeric.Decimal      (toScientificDecimal)
 import           Refined              (Positive, Refined, refineError, unrefine)
@@ -52,8 +52,8 @@ instance (KnownNat s) => Show (FXQuote s) where
 -- Right ("USD/SGD","2021-01-01","1.36")
 -- >>> Aeson.eitherDecode "{\"date\": \"2021-01-01\", \"ccy1\": \"USD\", \"ccy2\": \"SGD\", \"rate\": 1.366}" :: Either String (FXQuote 2)
 -- Right ("USD/SGD","2021-01-01","1.37")
--- >>> Aeson.eitherDecode "{\"date\": \"2021-01-01\", \"ccy1\": \"USD\", \"ccy2\": \"USD\", \"rate\": 1.35}" :: Either String (FXQuote 2)
--- Left "Error in $: Can not create FX Rate. Error was: Can not create currency pair from same currencies: USD and USD"
+-- >>> Aeson.eitherDecode "{\"date\": \"2021-01-01\", \"ccy1\": \"USD\", \"ccy2\": \"USD\", \"rate\": 1}" :: Either String (FXQuote 2)
+-- Right ("USD/USD","2021-01-01","1.00")
 -- >>> Aeson.eitherDecode "{\"date\": \"2021-01-01\", \"ccy1\": \"USD\", \"ccy2\": \"SGD\", \"rate\": -1.35}" :: Either String (FXQuote 2)
 -- Left "Error in $: Can not create FX Rate. Error was:   The predicate (GreaterThan 0) failed with the message: Value is not greater than 0\n"
 instance (KnownNat s) => Aeson.FromJSON (FXQuote s) where
@@ -73,8 +73,8 @@ instance (KnownNat s) => Aeson.FromJSON (FXQuote s) where
 instance (KnownNat s) => Aeson.ToJSON (FXQuote s) where
   toJSON (MkFXQuote d cp v) = Aeson.object
     [ "date" .= d
-    , "ccy1" .= baseCurrency cp
-    , "ccy2" .= quoteCurrency cp
+    , "ccy1" .= currencyPairBase cp
+    , "ccy2" .= currencyPairQuote cp
     , "rate" .= (toScientificDecimal . unQuantity . unrefine) v
     ]
 
@@ -92,7 +92,7 @@ fxquote
   -> Scientific  -- ^ FX rate value.
   -> m (FXQuote s)
 fxquote d c1 c2 v = either (throwError . (<>) "Can not create FX Rate. Error was: ") pure $ do
-  pair <- currencyPair c1 c2
+  let pair = CurrencyPair c1 c2
   pval <- either (Left . show) pure $ refineError (quantity v)
   pure $ MkFXQuote d pair pval
 

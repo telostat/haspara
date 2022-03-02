@@ -5,16 +5,16 @@
 
 module Haspara.Money where
 
-import           Control.Applicative       ((<|>))
-import           Data.Aeson                ((.:), (.=))
-import qualified Data.Aeson                as Aeson
-import           Data.Scientific           (Scientific)
-import           Data.Time                 (Day)
-import           GHC.TypeLits              (KnownNat, Nat)
-import           Haspara.Currency (Currency, baseCurrency, quoteCurrency)
-import           Haspara.FXQuote  (FXQuote(fxQuotePair, fxQuoteRate))
-import           Haspara.Quantity (Quantity, quantity, times)
-import           Refined                   (unrefine)
+import           Control.Applicative ((<|>))
+import           Data.Aeson          ((.:), (.=))
+import qualified Data.Aeson          as Aeson
+import           Data.Scientific     (Scientific)
+import           Data.Time           (Day)
+import           GHC.TypeLits        (KnownNat, Nat)
+import           Haspara.Currency    (Currency, CurrencyPair(currencyPairBase, currencyPairQuote))
+import           Haspara.FXQuote     (FXQuote(fxQuotePair, fxQuoteRate))
+import           Haspara.Quantity    (Quantity, quantity, times)
+import           Refined             (unrefine)
 
 
 data Money (s :: Nat) =
@@ -89,15 +89,13 @@ moneyQuantity (MoneyFail _)     = Nothing
 -- rate.
 --
 -- >>> import Haspara
--- >>> let eur = either error id $ currency "EUR"
--- >>> let usd = either error id $ currency "USD"
 -- >>> let date = read "2021-01-01" :: Day
--- >>> let eurmoney = mkMoney date eur (quantity 0.42 :: Quantity 2) :: Money 2
--- >>> convert eurmoney eur (quantity 1 :: Quantity 4)
+-- >>> let eurmoney = mkMoney date "EUR" (quantity 0.42 :: Quantity 2) :: Money 2
+-- >>> convert eurmoney "EUR" (quantity 1 :: Quantity 4)
 -- MoneySome 2021-01-01 EUR 0.42
--- >>> convert eurmoney usd (quantity 1 :: Quantity 4)
+-- >>> convert eurmoney "USD" (quantity 1 :: Quantity 4)
 -- MoneySome 2021-01-01 USD 0.42
--- >>> convert eurmoney usd (quantity 1.1516 :: Quantity 4)
+-- >>> convert eurmoney "USD" (quantity 1.1516 :: Quantity 4)
 -- MoneySome 2021-01-01 USD 0.48
 convert :: (KnownNat s, KnownNat k) => Money s -> Currency -> Quantity k -> Money s
 convert MoneyZero _ _                    = MoneyZero
@@ -114,5 +112,5 @@ convertWithQuote :: (KnownNat s, KnownNat k) => Money s -> FXQuote k -> Money s
 convertWithQuote MoneyZero _                    = MoneyZero
 convertWithQuote x@(MoneyFail _) _              = x
 convertWithQuote x@(MoneySome _ cbase _) quote
-  | cbase /= baseCurrency (fxQuotePair quote) = MoneyFail $ "Attempting to convert with incompatible base currency: " <> show x <> " with " <> show quote
-  | otherwise = convert x (quoteCurrency (fxQuotePair quote)) (unrefine $ fxQuoteRate quote)
+  | cbase /= currencyPairBase (fxQuotePair quote) = MoneyFail $ "Attempting to convert with incompatible base currency: " <> show x <> " with " <> show quote
+  | otherwise = convert x (currencyPairQuote (fxQuotePair quote)) (unrefine $ fxQuoteRate quote)
