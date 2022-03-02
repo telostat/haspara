@@ -1,9 +1,5 @@
 -- | This module provides definitions for modeling and working with currencies.
 
-{-# LANGUAGE DeriveLift                 #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 module Haspara.Currency where
 
 import           Control.Monad.Except       (MonadError(throwError))

@@ -1,8 +1,5 @@
-{-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE DeriveGeneric   #-}
-{-# LANGUAGE DerivingVia     #-}
-{-# LANGUAGE KindSignatures  #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DataKinds   #-}
+{-# LANGUAGE DerivingVia #-}
 
 module Haspara.Accounting.Posting where
 

@@ -1,8 +1,6 @@
 -- | This module provides template-haskell functions for various 'Haspara.Core.Base'
 -- definitions.
 --
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TemplateHaskell     #-}
 
 module Haspara.TH where
 

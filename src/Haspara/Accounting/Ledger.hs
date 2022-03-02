@@ -1,8 +1,5 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE DeriveGeneric    #-}
-{-# LANGUAGE DerivingVia      #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE KindSignatures   #-}
+{-# LANGUAGE DataKinds   #-}
+{-# LANGUAGE DerivingVia #-}
 
 module Haspara.Accounting.Ledger where
 

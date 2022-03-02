@@ -1,6 +1,4 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE KindSignatures   #-}
+{-# LANGUAGE DataKinds #-}
 
 module Haspara.Accounting.Event where
 

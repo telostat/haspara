@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 module Haspara.Accounting.AccountKind where
 
 import qualified Data.Aeson    as Aeson

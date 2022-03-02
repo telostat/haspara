@@ -1,8 +1,7 @@
 -- | This module provides definitions for modeling and working with monetary
 -- values.
 
-{-# LANGUAGE DataKinds      #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DataKinds #-}
 
 module Haspara.Money where
 

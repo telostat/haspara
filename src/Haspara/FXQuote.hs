@@ -1,8 +1,6 @@
 -- | This module provides definitions for modeling and working with FX rates.
 
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE KindSignatures   #-}
+{-# LANGUAGE DataKinds #-}
 
 module Haspara.FXQuote where
 
