@@ -13,7 +13,7 @@ import           Data.Time           (Day)
 import           GHC.TypeLits        (KnownNat, Nat)
 import           Haspara.Currency    (Currency, CurrencyPair(currencyPairBase, currencyPairQuote))
 import           Haspara.FXQuote     (FXQuote(fxQuotePair, fxQuoteRate))
-import           Haspara.Quantity    (Quantity, quantity, times)
+import           Haspara.Quantity    (Quantity, mkQuantity, times)
 import           Refined             (unrefine)
 
 
@@ -64,7 +64,7 @@ mkMoney = MoneySome
 
 
 mkMoneyFromScientific :: KnownNat s => Day -> Currency -> Scientific -> Money s
-mkMoneyFromScientific d c s = mkMoney d c (quantity s)
+mkMoneyFromScientific d c s = mkMoney d c (mkQuantity s)
 
 
 moneyDate :: KnownNat s => Money s -> Maybe Day
@@ -90,12 +90,12 @@ moneyQuantity (MoneyFail _)     = Nothing
 --
 -- >>> import Haspara
 -- >>> let date = read "2021-01-01" :: Day
--- >>> let eurmoney = mkMoney date "EUR" (quantity 0.42 :: Quantity 2) :: Money 2
--- >>> convert eurmoney "EUR" (quantity 1 :: Quantity 4)
+-- >>> let eurmoney = mkMoney date "EUR" (mkQuantity 0.42 :: Quantity 2) :: Money 2
+-- >>> convert eurmoney "EUR" (mkQuantity 1 :: Quantity 4)
 -- MoneySome 2021-01-01 EUR 0.42
--- >>> convert eurmoney "USD" (quantity 1 :: Quantity 4)
+-- >>> convert eurmoney "USD" (mkQuantity 1 :: Quantity 4)
 -- MoneySome 2021-01-01 USD 0.42
--- >>> convert eurmoney "USD" (quantity 1.1516 :: Quantity 4)
+-- >>> convert eurmoney "USD" (mkQuantity 1.1516 :: Quantity 4)
 -- MoneySome 2021-01-01 USD 0.48
 convert :: (KnownNat s, KnownNat k) => Money s -> Currency -> Quantity k -> Money s
 convert MoneyZero _ _                    = MoneyZero

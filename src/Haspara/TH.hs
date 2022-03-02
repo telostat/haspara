@@ -8,7 +8,7 @@ import           Data.Scientific            (Scientific)
 import qualified Data.Text                  as T
 import           GHC.TypeLits               (KnownNat)
 import           Haspara.Currency           (Currency, CurrencyPair(CurrencyPair), mkCurrencyError)
-import           Haspara.Quantity           (Quantity, quantityLossless)
+import           Haspara.Quantity           (Quantity, mkQuantityLossless)
 import qualified Language.Haskell.TH.Syntax as TH
 
 
@@ -30,7 +30,7 @@ quantityTH = fix $ \loop -> fmap TH.TExp . either (fail . show) TH.lift . quanti
     -- This provides a work-around for the type-inference due the `s` type parameter.
     -- Trick is borrowed from the Haskell `refined` library.
     quantityWE :: KnownNat s => TH.Q (TH.TExp (Quantity s)) -> Scientific -> Either String (Quantity s)
-    quantityWE = const quantityLossless
+    quantityWE = const mkQuantityLossless
 
 
 -- | Constructs a 'Currency' value at compile-time using @-XTemplateHaskell@.

@@ -12,7 +12,7 @@ import           Data.Scientific      (Scientific)
 import           Data.Time            (Day, addDays)
 import           GHC.TypeLits         (KnownNat, Nat)
 import           Haspara.Currency     (Currency, CurrencyPair(CurrencyPair, currencyPairBase, currencyPairQuote))
-import           Haspara.Quantity     (Quantity(..), quantity)
+import           Haspara.Quantity     (Quantity(..), mkQuantity)
 import           Numeric.Decimal      (toScientificDecimal)
 import           Refined              (Positive, Refined, refineError, unrefine)
 
@@ -93,7 +93,7 @@ fxquote
   -> m (FXQuote s)
 fxquote d c1 c2 v = either (throwError . (<>) "Can not create FX Rate. Error was: ") pure $ do
   let pair = CurrencyPair c1 c2
-  pval <- either (Left . show) pure $ refineError (quantity v)
+  pval <- either (Left . show) pure $ refineError (mkQuantity v)
   pure $ MkFXQuote d pair pval
 
 
