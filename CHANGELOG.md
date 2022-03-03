@@ -2,11 +2,36 @@
 ## [Unreleased]
 
 
+<a name="0.0.0.2"></a>
+## [0.0.0.2] - 2022-03-03
+### Chore
+- bump development version to 0.0.0.2
+- **dev:** add Weeder configuration
+- **dev:** add HLint configuration
+- **dev:** produce .hie files during compilation
+- **docs:** update README.md, fix haddock warnings
+
+### Refactor
+- revisit Haspara.Accounting module and its submodules
+- refactor and move definitions from Haspara.Money to Haspara.Monetary
+- revisit Haspara.FxQuote module
+- revisit Haspara.Quantity module
+- revisit Haspara.Currency module
+- adopt Haskell 2021 extensions
+- move definitions from Haspara.Internal.* to Haspara.*
+- remove Date type in favour of Day type
+- remove Id type and related definitions
+
+### Pull Requests
+- Merge pull request [#5](https://github.com/telostat/haspara/issues/5) from telostat/slim-down
+
+
 <a name="0.0.0.1"></a>
 ## [0.0.0.1] - 2022-03-01
 ### Chore
 - bump development version to 0.0.0.1
 - **deps:** upgrade to lts-18.27
+- **release:** 0.0.0.1
 
 ### Feat
 - add rudimentary accounting functionality
@@ -37,5 +62,6 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.1...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.2...HEAD
+[0.0.0.2]: https://github.com/telostat/haspara/compare/0.0.0.1...0.0.0.2
 [0.0.0.1]: https://github.com/telostat/haspara/compare/0.0.0.0...0.0.0.1
