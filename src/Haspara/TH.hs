@@ -1,4 +1,4 @@
--- | This module provides template-haskell functions for various 'Haspara.Core.Base'
+-- | This module provides template-haskell functions for various "Haspara"
 -- definitions.
 
 module Haspara.TH where

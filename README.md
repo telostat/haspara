@@ -10,8 +10,118 @@
 > reach the first minor version. Until then, we will keep bumping the patch
 > version.
 
-*haspara* is a Haskell library providing data definitions and functions to work
-with monetary values.
+*haspara* is a Haskell library that provides monetary definitions and a
+rudimentary (and experimental) accounting functionality.
+
+## Development
+
+Before committing code to repository, reformat the code:
+
+```sh
+stylish-haskell -i -r src/
+```
+
+Compile the codebase, check warnings and errors:
+
+```sh
+stack test
+stack build
+stack haddock
+```
+
+Run [hlint](https://github.com/ndmitchell/hlint):
+
+```sh
+hlint src/
+```
+
+Run [weeder](https://hackage.haskell.org/package/weeder):
+
+```sh
+weeder --require-hs-files
+```
+
+## Making Releases
+
+1. Switch to `develop` branch:
+
+    ```sh
+    git checkout develop
+    ```
+
+1. Ensure that your development branch is up to date:
+
+    ```sh
+    git pull
+    ```
+
+1. Checkout `main` branch:
+
+    ```sh
+    git checkout main
+    ```
+
+1. Merge `develop` branch to `main`:
+
+    ```sh
+    git merge --no-ff develop
+    ```
+
+1. Update the `version` information in [package.yaml](./package.yaml) if
+   required and recompile the project to reflect the change on the `.cabal`
+   file:
+
+    ```sh
+    stack build
+    ```
+
+1. Update [CHANGELOG.md](./CHANGELOG.md) file:
+
+    ```sh
+    git-chglog --next-tag <NEW-VERSION> -o CHANGELOG.md
+    ```
+
+1. Commit, tag and push:
+
+    ```sh
+    git commit -am "chore(release): <NEW-VERSION>"
+    git tag -a -m "Release <NEW-VERSION>" <NEW-VERSION>
+    git push --follow-tags origin main
+    ```
+
+1. Release to Hackage as a candidate first and check the result:
+
+    ```sh
+    stack upload --pvp-bounds both --candidate .
+    ```
+
+1. If the candidate package release works fine, release to Hackage:
+
+    ```sh
+    stack upload --pvp-bounds both .
+    ```
+
+1. Checkout to `develop` and rebase onto `main`:
+
+    ```sh
+    git checkout develop
+    git rebase main
+    ```
+
+1. Update the `version` information in [package.yaml](./package.yaml) with the
+   upcoming version and recompile the project to reflect the change on the
+   `.cabal` file:
+
+   ```sh
+   stack build
+   ```
+
+1. Commit and push:
+
+    ```sh
+    git commit -am "chore: bump development version to <UPCOMING-VERSION>"
+    git push
+    ```
 
 ## License
 
