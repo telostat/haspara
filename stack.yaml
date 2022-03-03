@@ -2,4 +2,4 @@ resolver: lts-18.27
 packages:
 - .
 ghc-options:
-  "$locals": -fwrite-ide-info -hiedir=.hie
+  "$locals": -fwrite-ide-info
