@@ -17,7 +17,9 @@ extra-source-files:
 dependencies:
 - base >= 4.11 && < 5
 - aeson
+- containers
 - deriving-aeson
+- exceptions
 - hashable
 - megaparsec
 - mtl
@@ -27,7 +29,6 @@ dependencies:
 - template-haskell
 - text
 - time
-- unordered-containers
 
 library:
   source-dirs:      src
@@ -35,6 +36,44 @@ library:
   - -Wall
   - -Wunused-packages
   default-extensions:
+  ## Begin: Haskell 2021 Extensions List
+  - BangPatterns
+  - BinaryLiterals
+  - ConstrainedClassMethods
+  - ConstraintKinds
+  - DeriveDataTypeable
+  - DeriveFoldable
+  - DeriveFunctor
+  - DeriveGeneric
+  - DeriveLift
+  - DeriveTraversable
+  - EmptyCase
+  - EmptyDataDeriving
+  - ExistentialQuantification
+  - ExplicitForAll
+  - FlexibleContexts
+  - FlexibleInstances
+  - GADTSyntax
+  - GeneralisedNewtypeDeriving
+  - HexFloatLiterals
+  - ImportQualifiedPost
+  - InstanceSigs
+  - KindSignatures
+  - MultiParamTypeClasses
+  - NamedFieldPuns
+  - NamedWildCards
+  - NumericUnderscores
+  - PolyKinds
+  - PostfixOperators
+  - RankNTypes
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - StandaloneKindSignatures
+  - TupleSections
+  - TypeApplications
+  - TypeOperators
+  - TypeSynonymInstances
+  ## End: Haskell 2021 Extensions List
   - OverloadedStrings
 
 tests:

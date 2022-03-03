@@ -1,3 +1,6 @@
+-- | This module provides a collection of definitions for a rudimentary
+-- accounting functionality.
+
 module Haspara.Accounting
   ( Account(..)
   , AccountKind(..)
@@ -12,7 +15,6 @@ module Haspara.Accounting
   , Posting(..)
   , postingEvents
   , post
-  , UnsignedQuantity
   , Ledger(..)
   , LedgerItem(..)
   , mkLedger
@@ -25,18 +27,21 @@ module Haspara.Accounting
   ) where
 
 
-import Haspara.Accounting.Account     (Account(..))
-import Haspara.Accounting.AccountKind (AccountKind(..), accountKindText)
-import Haspara.Accounting.Entry
+import Haspara.Accounting.Account (Account(..), AccountKind(..), accountKindText)
+import Haspara.Accounting.Event   (Event(..), eventDate, eventObject, mkEvent, negateEvent)
+import Haspara.Accounting.Ledger
        ( Entry(..)
+       , Ledger(..)
+       , LedgerItem(..)
+       , Posting(..)
+       , addEntry
        , buildEntry
        , entryCredit
        , entryDate
        , entryDebit
        , entryObject
        , entryQuantity
+       , mkLedger
+       , post
+       , postingEvents
        )
-import Haspara.Accounting.Event       (Event(..), eventDate, eventObject, mkEvent, negateEvent)
-import Haspara.Accounting.Ledger      (Ledger(..), LedgerItem(..), addEntry, mkLedger)
-import Haspara.Accounting.Posting     (Posting(..), post, postingEvents)
-import Haspara.Accounting.Types       (UnsignedQuantity)

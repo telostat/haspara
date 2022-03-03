@@ -1,38 +1,43 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE KindSignatures   #-}
+-- | This module provides definitions for economic events.
+--
+-- /Note: The concept is not YET REA-compatible although we want to achieve it
+-- at some point/.
+
+{-# LANGUAGE DataKinds #-}
 
 module Haspara.Accounting.Event where
 
-import           Control.Monad.Except     (MonadError(throwError))
-import           Data.Aeson               ((.:), (.=))
-import qualified Data.Aeson               as Aeson
-import qualified Data.Char                as C
-import qualified Data.Text                as T
-import           GHC.TypeLits             (KnownNat, Nat)
-import qualified Haspara                  as H
-import           Haspara.Accounting.Types (UnsignedQuantity)
-import           Refined                  (refine)
+import           Control.Monad.Except (MonadError(throwError))
+import           Data.Aeson           ((.:), (.=))
+import qualified Data.Aeson           as Aeson
+import qualified Data.Char            as C
+import qualified Data.Text            as T
+import           Data.Time            (Day)
+import           GHC.TypeLits         (KnownNat, Nat)
+import           Haspara.Quantity     (Quantity, UnsignedQuantity)
+import           Refined              (refine)
 
 
--- | Encoding of an increment/decrement event.
+-- | Type encoding of an economic increment/decrement event.
+--
+-- The event explicitly carries the date and quantity information along with a
+-- parameterized, arbitrary object providing the source of the event.
 --
 -- >>> :set -XDataKinds
--- >>> import Refined
 -- >>> let date = read "2021-01-01"
 -- >>> let oid = 1 :: Int
--- >>> let qty = $$(refineTH 42) :: UnsignedQuantity 2
+-- >>> let qty = $$(Refined.refineTH 42) :: UnsignedQuantity 2
 -- >>> let event = EventDecrement date oid qty
--- >>> let json = Aeson.encode event
+-- >>> let json = Data.Aeson.encode event
 -- >>> json
--- "{\"qty\":42.0,\"obj\":1,\"date\":\"2021-01-01\",\"type\":\"DECREMENT\"}"
--- >>> Aeson.decode json :: Maybe (Event Int 2)
+-- "{\"qty\":42.0,\"type\":\"DECREMENT\",\"obj\":1,\"date\":\"2021-01-01\"}"
+-- >>> Data.Aeson.decode @(Event Int 2) json
 -- Just (EventDecrement 2021-01-01 1 (Refined 42.00))
--- >>> Aeson.decode json == Just event
+-- >>> Data.Aeson.decode json == Just event
 -- True
 data Event o (s :: Nat) =
-    EventDecrement H.Date o (UnsignedQuantity s)
-  | EventIncrement H.Date o (UnsignedQuantity s)
+    EventDecrement Day o (UnsignedQuantity s)
+  | EventIncrement Day o (UnsignedQuantity s)
   deriving (Eq, Ord, Show)
 
 
@@ -55,22 +60,32 @@ instance (Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Event o s) where
     EventIncrement d o q -> Aeson.object ["type" .= ("INCREMENT" :: T.Text), "date" .= d, "obj" .= o, "qty" .= q]
 
 
-eventDate :: (KnownNat s) => Event o s -> H.Date
+-- | Returns the date of the event.
+eventDate :: (KnownNat s) => Event o s -> Day
 eventDate (EventDecrement d _ _) = d
 eventDate (EventIncrement d _ _) = d
 
 
+-- | Returns the source object of the event.
 eventObject :: (KnownNat s) => Event o s -> o
 eventObject (EventDecrement _ o _) = o
 eventObject (EventIncrement _ o _) = o
 
 
+-- | Negates the event.
 negateEvent :: (KnownNat s) => Event o s -> Event o s
 negateEvent (EventDecrement d o x) = EventIncrement d o x
 negateEvent (EventIncrement d o x) = EventDecrement d o x
 
 
-mkEvent :: (MonadError String m, KnownNat s) => H.Date -> o -> H.Quantity s -> m (Event o s)
+-- | Smart constuctor for 'Event' values.
+mkEvent
+  :: MonadError String m
+  => KnownNat s
+  => Day         -- ^ Date of the event.
+  -> o           -- ^ Source object of the event.
+  -> Quantity s  -- ^ Quantity of the event.
+  -> m (Event o s)
 mkEvent d o x
   | x < 0     = either (throwError . show) pure $ EventDecrement d o <$> refine (abs x)
   | otherwise = either (throwError . show) pure $ EventIncrement d o <$> refine (abs x)
