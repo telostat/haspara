@@ -30,14 +30,11 @@ library
       Haspara
       Haspara.Accounting
       Haspara.Accounting.Account
-      Haspara.Accounting.AccountKind
-      Haspara.Accounting.Entry
       Haspara.Accounting.Event
       Haspara.Accounting.Ledger
-      Haspara.Accounting.Posting
-      Haspara.Accounting.Types
       Haspara.Currency
       Haspara.FxQuote
+      Haspara.Internal.Aeson
       Haspara.Monetary
       Haspara.Quantity
       Haspara.TH

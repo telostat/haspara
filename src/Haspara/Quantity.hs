@@ -17,6 +17,7 @@ import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat, natVal, type (+))
 import qualified Language.Haskell.TH.Syntax as TH
 import qualified Numeric.Decimal            as D
+import           Refined                    (NonNegative, Refined)
 
 
 -- * Data Definition
@@ -56,6 +57,10 @@ import qualified Numeric.Decimal            as D
 -- Left "Underflow while trying to create quantity: 0.415"
 newtype Quantity (s :: Nat) = MkQuantity { unQuantity :: D.Decimal D.RoundHalfEven s Integer }
   deriving (Eq, Ord, Generic, Num)
+
+
+-- | Type definition for unsigned 'Quantity' values.
+type UnsignedQuantity s = Refined NonNegative (Quantity s)
 
 
 -- | Orphan 'TH.Lift' instance for 'Quantity'.
