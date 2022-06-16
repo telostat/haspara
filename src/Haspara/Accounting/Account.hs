@@ -6,11 +6,11 @@
 
 module Haspara.Accounting.Account where
 
+import qualified Data.Aeson             as Aeson
 import           Data.Hashable          (Hashable)
 import qualified Data.Text              as T
-import qualified Deriving.Aeson         as DA
-import qualified Deriving.Aeson.Stock   as DAS
-import           Haspara.Internal.Aeson (UpperCase)
+import           GHC.Generics           (Generic)
+import           Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOptions)
 
 
 -- * Account Kind
@@ -57,11 +57,18 @@ data AccountKind =
   | AccountKindEquity
   | AccountKindRevenue
   | AccountKindExpense
-  deriving (Enum, Eq, DA.Generic, Ord, Show)
-  deriving (DA.FromJSON, DA.ToJSON) via DA.CustomJSON '[DA.ConstructorTagModifier (DA.StripPrefix "AccountKind", UpperCase)] AccountKind
+  deriving (Enum, Eq, Generic, Ord, Show)
 
 
 instance Hashable AccountKind
+
+
+instance Aeson.FromJSON AccountKind where
+  parseJSON = Aeson.genericParseJSON $ aesonOptionsForSingleTag "AccountKind"
+
+
+instance Aeson.ToJSON AccountKind where
+  toJSON = Aeson.genericToJSON $ aesonOptionsForSingleTag "AccountKind"
 
 
 -- | Provides textual representation of a given 'AccountKind'.
@@ -106,8 +113,15 @@ data Account o = Account
   { accountKind   :: !AccountKind
   , accountObject :: !o
   }
-  deriving (Eq, DAS.Generic, Ord, Show)
-  deriving (DAS.FromJSON, DAS.ToJSON) via DAS.PrefixedSnake "account" (Account o)
+  deriving (Eq, Generic, Ord, Show)
 
 
 instance Hashable o => Hashable (Account o)
+
+
+instance Aeson.FromJSON o => Aeson.FromJSON (Account o) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "account"
+
+
+instance Aeson.ToJSON o => Aeson.ToJSON (Account o) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "account"

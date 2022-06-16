@@ -1,4 +1,4 @@
-resolver: lts-19.11
+resolver: lts-18.28
 
 packages:
 - .
@@ -11,4 +11,4 @@ nix:
   shell-file: shell.nix
   nix-shell-options:
   - "--arg"
-  - "ghcVersion=ghc902"
+  - "ghcVersion=ghc8107"
