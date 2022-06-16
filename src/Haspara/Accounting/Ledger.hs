@@ -11,11 +11,11 @@ import qualified Data.Char                  as C
 import qualified Data.List.NonEmpty         as NE
 import qualified Data.Text                  as T
 import           Data.Time                  (Day)
-import           Deriving.Aeson             (CustomJSON(CustomJSON), FromJSON, Generic, ToJSON)
-import           Deriving.Aeson.Stock       (PrefixedSnake, Vanilla)
+import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Account (Account(accountKind), AccountKind(..))
 import           Haspara.Accounting.Event   (Event(..), eventObject)
+import           Haspara.Internal.Aeson     (commonAesonOptions)
 import           Haspara.Quantity           (Quantity, UnsignedQuantity)
 import           Refined                    (unrefine)
 
@@ -26,17 +26,32 @@ data Ledger a o (s :: Nat) = Ledger
   , ledgerOpening :: !(Quantity s)
   , ledgerClosing :: !(Quantity s)
   , ledgerRunning :: ![LedgerItem o s]
-  } deriving (Eq, Generic, Ord, Show)
-  deriving (FromJSON, ToJSON) via PrefixedSnake "ledger" (Ledger a o s)
+  }
+  deriving (Eq, Generic, Ord, Show)
+
+
+instance (Aeson.FromJSON a, Aeson.FromJSON o, KnownNat s) => Aeson.FromJSON (Ledger a o s) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "ledger"
+
+
+instance (Aeson.ToJSON a, Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Ledger a o s) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "ledger"
 
 
 -- | Type encoding of a ledger item.
 data LedgerItem o (s :: Nat) = LedgerItem
   { ledgerItemEntry   :: !(Entry o s)
   , ledgerItemBalance :: !(Quantity s)
-  } deriving (Eq, Generic, Ord, Show)
-  deriving (FromJSON, ToJSON)
-  via PrefixedSnake "ledgerItem" (LedgerItem o s)
+  }
+  deriving (Eq, Generic, Ord, Show)
+
+
+instance (Aeson.FromJSON o, KnownNat s) => Aeson.FromJSON (LedgerItem o s) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "ledgerItem"
+
+
+instance (Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (LedgerItem o s) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "ledgerItem"
 
 
 -- | Creates a ledger from a given list of 'Entry' values.
@@ -74,8 +89,14 @@ addEntry l@(Ledger _ _ c r) e = l { ledgerClosing = balance, ledgerRunning = r <
 -- True
 newtype Posting a o (s :: Nat) = Posting (NE.NonEmpty (Event o s, Account a))
   deriving (Eq, Generic, Ord, Show)
-  deriving (FromJSON, ToJSON)
-  via Vanilla (Posting a o s)
+
+
+instance (Aeson.FromJSON a, Aeson.FromJSON o, KnownNat s) => Aeson.FromJSON (Posting a o s) where
+  parseJSON = Aeson.genericParseJSON Aeson.defaultOptions
+
+
+instance (Aeson.ToJSON a, Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Posting a o s) where
+  toJSON = Aeson.genericToJSON Aeson.defaultOptions
 
 
 -- | Returns the list of posting event sources.

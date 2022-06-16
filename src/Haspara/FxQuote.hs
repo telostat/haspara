@@ -6,17 +6,19 @@
 
 module Haspara.FxQuote where
 
-import           Control.Monad.Except (MonadError(throwError))
-import           Data.Foldable        (foldl')
-import qualified Data.Map.Strict      as SM
-import           Data.Scientific      (Scientific)
-import qualified Data.Text            as T
-import           Data.Time            (Day, addDays)
-import qualified Deriving.Aeson.Stock as DAS
-import           GHC.TypeLits         (KnownNat, Nat)
-import           Haspara.Currency     (Currency, CurrencyPair(CurrencyPair))
-import           Haspara.Quantity     (Quantity(..), mkQuantity)
-import           Refined              (Positive, Refined, refineError)
+import           Control.Monad.Except   (MonadError(throwError))
+import qualified Data.Aeson             as Aeson
+import           Data.Foldable          (foldl')
+import qualified Data.Map.Strict        as SM
+import           Data.Scientific        (Scientific)
+import qualified Data.Text              as T
+import           Data.Time              (Day, addDays)
+import           GHC.Generics           (Generic)
+import           GHC.TypeLits           (KnownNat, Nat)
+import           Haspara.Currency       (Currency, CurrencyPair(CurrencyPair))
+import           Haspara.Internal.Aeson (commonAesonOptions)
+import           Haspara.Quantity       (Quantity(..), mkQuantity)
+import           Refined                (Positive, Refined, refineError)
 
 
 -- * FX Rate Quotation
@@ -35,8 +37,15 @@ data FxQuote (s :: Nat) = MkFxQuote
   , fxQuoteDate :: !Day  -- ^ Actual date of the FX rate.
   , fxQuoteRate :: !(Refined Positive (Quantity s))  -- ^ (Positive) rate value of the FX rate.
   }
-  deriving (Eq, DAS.Generic, Ord, Show)
-  deriving (DAS.FromJSON, DAS.ToJSON) via DAS.PrefixedSnake "fxQuote" (FxQuote s)
+  deriving (Eq, Generic, Ord, Show)
+
+
+instance KnownNat s => Aeson.FromJSON (FxQuote s) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "fxQuote"
+
+
+instance KnownNat s => Aeson.ToJSON (FxQuote s) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "fxQuote"
 
 
 -- | Smart constructor for 'FxQuote' values within @'MonadError' 'T.Text'@
