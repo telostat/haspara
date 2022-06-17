@@ -6,17 +6,19 @@
 
 module Haspara.Monetary where
 
-import           Control.Exception    (Exception)
-import           Control.Monad        (when)
-import           Control.Monad.Catch  (MonadThrow(throwM))
-import           Data.Time            (Day)
-import qualified Deriving.Aeson.Stock as DAS
-import           GHC.Stack            (HasCallStack)
-import           GHC.TypeLits         (KnownNat, Nat)
-import           Haspara.Currency     (Currency, CurrencyPair(..))
-import           Haspara.FxQuote      (FxQuote(..))
-import           Haspara.Quantity     (Quantity, times)
-import           Refined              (unrefine)
+import           Control.Exception      (Exception)
+import           Control.Monad          (when)
+import           Control.Monad.Catch    (MonadThrow(throwM))
+import qualified Data.Aeson             as Aeson
+import           Data.Time              (Day)
+import           GHC.Generics           (Generic)
+import           GHC.Stack              (HasCallStack)
+import           GHC.TypeLits           (KnownNat, Nat)
+import           Haspara.Currency       (Currency, CurrencyPair(..))
+import           Haspara.FxQuote        (FxQuote(..))
+import           Haspara.Internal.Aeson (commonAesonOptions)
+import           Haspara.Quantity       (Quantity, times)
+import           Refined                (unrefine)
 
 
 -- | Type encoding for dated monetary values.
@@ -31,8 +33,15 @@ data Money (s :: Nat) = Money
   , moneyCurrency :: !Currency
   , moneyQuantity :: !(Quantity s)
   }
-  deriving (Eq, DAS.Generic, Ord, Show)
-  deriving (DAS.FromJSON, DAS.ToJSON) via DAS.PrefixedSnake "money" (Money s)
+  deriving (Eq, Generic, Ord, Show)
+
+
+instance KnownNat s => Aeson.FromJSON (Money s) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "money"
+
+
+instance KnownNat s => Aeson.ToJSON (Money s) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "money"
 
 
 -- | Type encoding of a monetary context.
