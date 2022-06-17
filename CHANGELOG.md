@@ -2,6 +2,22 @@
 ## [Unreleased]
 
 
+<a name="0.0.0.3"></a>
+## [0.0.0.3] - 2022-06-17
+### Chore
+- drop deriving-aeson dependency
+- adopt Stack lts-19.11 (and GHC902), add Nix Shell
+- bump development version to 0.0.0.3
+- **build:** specify dependency version ranges
+
+### Refactor
+- revisit Haspara.FxQuote module, add new definitions
+
+### Pull Requests
+- Merge pull request [#6](https://github.com/telostat/haspara/issues/6) from telostat/chores-fixes-improvements
+- Merge pull request [#7](https://github.com/telostat/haspara/issues/7) from telostat/vst/ghc902
+
+
 <a name="0.0.0.2"></a>
 ## [0.0.0.2] - 2022-03-03
 ### Chore
@@ -10,6 +26,7 @@
 - **dev:** add HLint configuration
 - **dev:** produce .hie files during compilation
 - **docs:** update README.md, fix haddock warnings
+- **release:** 0.0.0.2
 
 ### Refactor
 - revisit Haspara.Accounting module and its submodules
@@ -62,6 +79,7 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.2...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.3...HEAD
+[0.0.0.3]: https://github.com/telostat/haspara/compare/0.0.0.2...0.0.0.3
 [0.0.0.2]: https://github.com/telostat/haspara/compare/0.0.0.1...0.0.0.2
 [0.0.0.1]: https://github.com/telostat/haspara/compare/0.0.0.0...0.0.0.1
