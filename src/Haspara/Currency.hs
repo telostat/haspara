@@ -11,7 +11,8 @@ import           Data.Hashable              (Hashable)
 import           Data.String                (IsString(..))
 import qualified Data.Text                  as T
 import           Data.Void                  (Void)
-import qualified Deriving.Aeson.Stock       as DAS
+import           GHC.Generics               (Generic)
+import           Haspara.Internal.Aeson     (commonAesonOptions)
 import qualified Language.Haskell.TH.Syntax as TH
 import qualified Text.Megaparsec            as MP
 
@@ -162,8 +163,15 @@ data CurrencyPair = CurrencyPair
   { currencyPairBase  :: !Currency  -- ^ /Base currency/ of the currency pair. Also referred to as /counter currency/.
   , currencyPairQuote :: !Currency  -- ^ /Quote currency/ of the currency pair. Also referred to as /transaction currency/.
   }
-  deriving (Eq, DAS.Generic, Ord, TH.Lift)
-  deriving (DAS.FromJSON, DAS.ToJSON) via DAS.PrefixedSnake "currencyPair" CurrencyPair
+  deriving (Eq, Generic, Ord, TH.Lift)
+
+
+instance Aeson.FromJSON CurrencyPair where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "currencyPair"
+
+
+instance Aeson.ToJSON CurrencyPair where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "currencyPair"
 
 
 -- | 'Show' instance for 'CurrencyPair'.

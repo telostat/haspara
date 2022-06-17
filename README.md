@@ -92,13 +92,13 @@ weeder --require-hs-files
 1. Release to Hackage as a candidate first and check the result:
 
     ```sh
-    stack upload --pvp-bounds both --candidate .
+    stack upload --candidate .
     ```
 
 1. If the candidate package release works fine, release to Hackage:
 
     ```sh
-    stack upload --pvp-bounds both .
+    stack upload .
     ```
 
 1. Checkout to `develop` and rebase onto `main`:
