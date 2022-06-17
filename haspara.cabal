@@ -82,19 +82,19 @@ library
       OverloadedStrings
   ghc-options: -Wall -Wunused-packages
   build-depends:
-      aeson
+      aeson >=1.5.6.0 && <2.1
     , base >=4.11 && <5
-    , containers
-    , exceptions
-    , hashable
-    , megaparsec
-    , mtl
-    , refined
-    , safe-decimal
-    , scientific
-    , template-haskell
-    , text
-    , time
+    , containers >=0.6.4.1 && <0.7
+    , exceptions >=0.10.4 && <0.11
+    , hashable >=1.3.0.0 && <1.4
+    , megaparsec >=9.0.1 && <9.3
+    , mtl >=2.2.2 && <2.3
+    , refined >=0.6.3 && <0.7
+    , safe-decimal >=0.2.1.0 && <0.3
+    , scientific >=0.3.7.0 && <0.4
+    , template-haskell >=2.16.0.0 && <2.18
+    , text >=1.2.4.1 && <1.3
+    , time >=1.9.3 && <1.10
   default-language: Haskell2010
 
 test-suite haspara-doctest
@@ -106,19 +106,19 @@ test-suite haspara-doctest
       test
   ghc-options: -threaded
   build-depends:
-      aeson
+      aeson >=1.5.6.0 && <2.1
     , base >=4.11 && <5
-    , containers
+    , containers >=0.6.4.1 && <0.7
     , doctest
-    , exceptions
-    , hashable
+    , exceptions >=0.10.4 && <0.11
+    , hashable >=1.3.0.0 && <1.4
     , haspara
-    , megaparsec
-    , mtl
-    , refined
-    , safe-decimal
-    , scientific
-    , template-haskell
-    , text
-    , time
+    , megaparsec >=9.0.1 && <9.3
+    , mtl >=2.2.2 && <2.3
+    , refined >=0.6.3 && <0.7
+    , safe-decimal >=0.2.1.0 && <0.3
+    , scientific >=0.3.7.0 && <0.4
+    , template-haskell >=2.16.0.0 && <2.18
+    , text >=1.2.4.1 && <1.3
+    , time >=1.9.3 && <1.10
   default-language: Haskell2010
