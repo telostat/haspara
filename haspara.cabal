@@ -36,6 +36,7 @@ library
       Haspara.Accounting.Journal
       Haspara.Accounting.Ledger
       Haspara.Accounting.Side
+      Haspara.Accounting.TrialBalance
       Haspara.Currency
       Haspara.FxQuote
       Haspara.Internal.Aeson
