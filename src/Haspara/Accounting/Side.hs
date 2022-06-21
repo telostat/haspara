@@ -54,6 +54,17 @@ instance Aeson.ToJSON Side where
   toJSON SideCredit = Aeson.String "cr"
 
 
+-- | Gives the other side.
+--
+-- >>> otherSide SideDebit
+-- SideCredit
+-- >>> otherSide SideCredit
+-- SideDebit
+otherSide :: Side -> Side
+otherSide SideDebit  = SideCredit
+otherSide SideCredit = SideDebit
+
+
 -- | Computes the 'Side' by the given 'AccountKind' and the sign of the given
 -- 'Quantity'.
 --
@@ -63,6 +74,22 @@ instance Aeson.ToJSON Side where
 -- @0@ quantities are considered to originate from an increment event. So far,
 -- this seems to be a safe assumption that gives us totality in the context of
 -- this function.
+--
+-- Note the following mapping as a guide:
+--
+-- +-----------------------+----------+----------+
+-- | Kind of account       | Debit    | Credit   |
+-- +-----------------------+----------+----------+
+-- | Asset                 | Increase | Decrease |
+-- +-----------------------+----------+----------+
+-- | Liability             | Decrease | Increase |
+-- +-----------------------+----------+----------+
+-- | Equity/Capital        | Decrease | Increase |
+-- +-----------------------+----------+----------+
+-- | Income/Revenue        | Decrease | Increase |
+-- +-----------------------+----------+----------+
+-- | Expense/Cost/Dividend | Increase | Decrease |
+-- +-----------------------+----------+----------+
 --
 -- >>> :set -XDataKinds
 -- >>> import Haspara.Quantity
@@ -95,3 +122,28 @@ sideByAccountKind k q = case (k, signum q >= 0) of
   (AccountKindRevenue, True)    -> SideCredit
   (AccountKindExpense, False)   -> SideCredit
   (AccountKindExpense, True)    -> SideDebit
+
+
+-- | Returns the "normal" side for a given 'AccountKind'.
+--
+-- Note the following mapping as a guide:
+--
+-- +-----------------+----------------+------------------+
+-- | Kind of Account | Normal Balance | Negative Balance |
+-- +-----------------+----------------+------------------+
+-- | Asset           | Debit          | Credit           |
+-- +-----------------+----------------+------------------+
+-- | Liability       | Credit         | Debit            |
+-- +-----------------+----------------+------------------+
+-- | Equity          | Credit         | Debit            |
+-- +-----------------+----------------+------------------+
+-- | Revenue         | Credit         | Debit            |
+-- +-----------------+----------------+------------------+
+-- | Expense         | Debit          | Credit           |
+-- +-----------------+----------------+------------------+
+normalSideByAccountKind :: AccountKind -> Side
+normalSideByAccountKind AccountKindAsset     = SideDebit
+normalSideByAccountKind AccountKindLiability = SideCredit
+normalSideByAccountKind AccountKindEquity    = SideCredit
+normalSideByAccountKind AccountKindRevenue   = SideCredit
+normalSideByAccountKind AccountKindExpense   = SideDebit
