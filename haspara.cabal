@@ -31,6 +31,8 @@ library
       Haspara.Accounting
       Haspara.Accounting.Account
       Haspara.Accounting.Event
+      Haspara.Accounting.Amount
+      Haspara.Accounting.Balance
       Haspara.Accounting.Journal
       Haspara.Accounting.Ledger
       Haspara.Accounting.Side
