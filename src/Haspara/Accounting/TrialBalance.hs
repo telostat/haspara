@@ -8,7 +8,7 @@ import qualified Data.Aeson                 as Aeson
 import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Amount  (Amount)
-import           Haspara.Accounting.Balance (Balance(Balance, balanceSide), toAmount, updateBalance)
+import           Haspara.Accounting.Balance (Balance(Balance, balanceSide), amountFromBalance, updateBalance)
 import           Haspara.Accounting.Ledger  (GeneralLedger(generalLedgerLedgers), Ledger, ledgerClosing)
 import           Haspara.Accounting.Side    (Side(..))
 import           Haspara.Internal.Aeson     (commonAesonOptions)
@@ -51,7 +51,7 @@ trialBalanceItemAmount
   :: KnownNat precision
   => TrialBalanceItem precision account event
   -> Amount precision
-trialBalanceItemAmount = toAmount . trialBalanceItemBalance
+trialBalanceItemAmount = amountFromBalance . trialBalanceItemBalance
 
 
 -- | Given a general ledger, prepares the trial balance.
@@ -79,8 +79,8 @@ trialBalanceTotals
   -> (Balance precision, Balance precision)
 trialBalanceTotals (TrialBalance items) =
   let
-    itemsFromDb = toAmount . trialBalanceItemBalance <$> filter ((==) SideDebit . balanceSide . trialBalanceItemBalance) items
-    itemsFromCr = toAmount . trialBalanceItemBalance <$> filter ((==) SideCredit . balanceSide . trialBalanceItemBalance) items
+    itemsFromDb = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideDebit . balanceSide . trialBalanceItemBalance) items
+    itemsFromCr = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideCredit . balanceSide . trialBalanceItemBalance) items
     totalDb = foldl updateBalance (Balance SideDebit 0) itemsFromDb
     totalCr = foldl updateBalance (Balance SideCredit 0) itemsFromCr
   in

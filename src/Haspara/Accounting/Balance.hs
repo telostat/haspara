@@ -8,8 +8,8 @@ import qualified Data.Aeson                 as Aeson
 import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Account (AccountKind)
-import           Haspara.Accounting.Amount  (Amount(Amount), quantityFromAmount)
-import           Haspara.Accounting.Side    (Side, otherSide)
+import           Haspara.Accounting.Amount  (Amount(Amount), quantityFromAmount, valueFromAmount)
+import           Haspara.Accounting.Side    (Side(..), otherSide)
 import           Haspara.Internal.Aeson     (commonAesonOptions)
 import           Haspara.Quantity           (Quantity, absQuantity)
 import           Refined                    (unrefine)
@@ -76,6 +76,24 @@ instance KnownNat precision => Aeson.ToJSON (Balance precision) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "balance"
 
 
+-- | Returns the debit quantity, if any.
+balanceDebit
+  :: KnownNat precision
+  => Balance precision
+  -> Maybe (Quantity precision)
+balanceDebit (Balance SideDebit v) = Just v
+balanceDebit _                     = Nothing
+
+
+-- | Returns the credit quantity, if any.
+balanceCredit
+  :: KnownNat precision
+  => Balance precision
+  -> Maybe (Quantity precision)
+balanceCredit (Balance SideCredit v) = Just v
+balanceCredit _                      = Nothing
+
+
 -- | Updates the balance with the given amount.
 --
 -- >>> import Haspara.Accounting.Amount
@@ -114,18 +132,31 @@ updateBalance (Balance bSide bVal) (Amount aSide aVal) =
 -- Amount {amountSide = SideCredit, amountValue = Refined 42.00}
 -- >>> toAmount (Balance SideCredit (-42) :: Balance 2)
 -- Amount {amountSide = SideDebit, amountValue = Refined 42.00}
-toAmount
+amountFromBalance
   :: KnownNat precision
   => Balance precision
   -> Amount precision
-toAmount (Balance side value) =
+amountFromBalance (Balance side value) =
   Amount (if value < 0 then otherSide side else side) (absQuantity value)
 
 
--- | Returns the nominal value of the balance given the account kind.
-toQuantityWithKind
+-- | Returns the quantity of the balance given the account kind.
+--
+-- See 'quantityFromAmount' for the meaning of quantity.
+quantityFromBalance
   :: KnownNat precision
   => AccountKind
   -> Balance precision
   -> Quantity precision
-toQuantityWithKind k = quantityFromAmount k . toAmount
+quantityFromBalance k = quantityFromAmount k . amountFromBalance
+
+
+-- | Returns the value of the balance given the account kind.
+--
+-- See 'valueFromAmount' for the meaning of quantity.
+valueFromBalance
+  :: KnownNat precision
+  => AccountKind
+  -> Balance precision
+  -> Quantity precision
+valueFromBalance k = valueFromAmount k . amountFromBalance
