@@ -152,7 +152,7 @@ amountFromValue k q = case k of
   AccountKindExpense   -> Amount { amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q }
 
 
--- | Returns the 'Value' for the given 'Amount' for the given 'AccountKind'.
+-- | Returns the value for the given 'Amount' for the given 'AccountKind'.
 --
 -- This is dual to 'amountFromValue'.
 --
@@ -199,7 +199,7 @@ valueFromAmount k (Amount s v) = case (k, s, unrefine v) of
 -- | Builds the 'Amount' value for the given account kind and quantity.
 --
 -- The concept of /quantity/ here refers to the conventional concept of what it
--- means for an 'Account' of a given 'AccountKind'.
+-- means for an 'Haspara.Accounting.Account.Account' of a given 'AccountKind'.
 --
 -- For example, a loan of USD 1,000 has an increase in our liabilities.
 -- Therefore, the quantity is expected to be positive:

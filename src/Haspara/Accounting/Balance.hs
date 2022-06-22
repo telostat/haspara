@@ -124,13 +124,13 @@ updateBalance (Balance bSide bVal) (Amount aSide aVal) =
 -- | Converts the balance to amount.
 --
 -- >>> import Haspara.Accounting.Side
--- >>> toAmount (Balance SideDebit 42 :: Balance 2)
+-- >>> amountFromBalance (Balance SideDebit 42 :: Balance 2)
 -- Amount {amountSide = SideDebit, amountValue = Refined 42.00}
--- >>> toAmount (Balance SideDebit (-42) :: Balance 2)
+-- >>> amountFromBalance (Balance SideDebit (-42) :: Balance 2)
 -- Amount {amountSide = SideCredit, amountValue = Refined 42.00}
--- >>> toAmount (Balance SideCredit 42 :: Balance 2)
+-- >>> amountFromBalance (Balance SideCredit 42 :: Balance 2)
 -- Amount {amountSide = SideCredit, amountValue = Refined 42.00}
--- >>> toAmount (Balance SideCredit (-42) :: Balance 2)
+-- >>> amountFromBalance (Balance SideCredit (-42) :: Balance 2)
 -- Amount {amountSide = SideDebit, amountValue = Refined 42.00}
 amountFromBalance
   :: KnownNat precision

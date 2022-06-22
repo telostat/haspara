@@ -31,7 +31,7 @@ data Side = SideDebit | SideCredit
 -- >>> Aeson.eitherDecode "\"cr\"" :: Either String Side
 -- Right SideCredit
 -- >>> Aeson.eitherDecode "\"hebele\"" :: Either String Side
--- Left "Error in $: Unkown side indicator: \"hebele\""
+-- Left "Error in $: Unkown side indicator: \"hebele\". Expecting one of \"db\" or \"cr\""
 instance Aeson.FromJSON Side where
   parseJSON = Aeson.withText "Side" $ \t -> case t of
     "db" -> pure SideDebit
