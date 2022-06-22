@@ -2,6 +2,32 @@
 ## [Unreleased]
 
 
+<a name="0.0.0.4"></a>
+## [0.0.0.4] - 2022-06-22
+### Chore
+- fix doctests and Haddock documentation
+- start working on Haspara.Accounting.Journal module
+- add new functions to Haspara.Quantity module
+- bump development version to 0.0.0.4
+
+### Feat
+- add Haspara.Accounting.Side module
+- **accounting:** improve Ledger module definitions
+- **accounting:** delineate value and quantity concepts wrt Amount
+- **accounting:** add Bounded instance to AccountKind
+- **accounting:** add TrialBalance definitions
+- **accounting:** add Amount and Balance definitions
+- **accounting:** improve the Haspara.Accounting.Side module
+- **accounting:** improve Balance module definitions
+
+### Refactor
+- **accounting:** remove Event definitions, revisit exports
+- **accounting:** revisit Ledger{Entry} and Journal{Entry,EntryItem}
+
+### Pull Requests
+- Merge pull request [#10](https://github.com/telostat/haspara/issues/10) from telostat/vst/issue-9
+
+
 <a name="0.0.0.3"></a>
 ## [0.0.0.3] - 2022-06-17
 ### Chore
@@ -9,6 +35,7 @@
 - adopt Stack lts-19.11 (and GHC902), add Nix Shell
 - bump development version to 0.0.0.3
 - **build:** specify dependency version ranges
+- **release:** 0.0.0.3
 
 ### Refactor
 - revisit Haspara.FxQuote module, add new definitions
@@ -79,7 +106,8 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.3...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.4...HEAD
+[0.0.0.4]: https://github.com/telostat/haspara/compare/0.0.0.3...0.0.0.4
 [0.0.0.3]: https://github.com/telostat/haspara/compare/0.0.0.2...0.0.0.3
 [0.0.0.2]: https://github.com/telostat/haspara/compare/0.0.0.1...0.0.0.2
 [0.0.0.1]: https://github.com/telostat/haspara/compare/0.0.0.0...0.0.0.1
