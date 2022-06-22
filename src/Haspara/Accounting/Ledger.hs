@@ -14,7 +14,7 @@ import           Data.Time                  (Day)
 import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Account (Account(accountKind))
-import           Haspara.Accounting.Amount  (Amount, amountFromQuantity)
+import           Haspara.Accounting.Amount  (Amount, amountFromQuantity, amountFromValue)
 import           Haspara.Accounting.Balance (Balance(Balance), updateBalance)
 import           Haspara.Accounting.Journal (JournalEntry(..), JournalEntryItem(JournalEntryItem))
 import           Haspara.Accounting.Side    (normalSideByAccountKind)
@@ -93,13 +93,39 @@ initLedger acc = Ledger acc balance []
     balance = Balance (normalSideByAccountKind (accountKind acc)) 0
 
 
--- | Initializes a ledger with the given opening quantity.
+-- | Initializes a ledger with the given opening balance.
 initLedgerWithOpeningBalance
+  :: KnownNat precision
+  => Account account
+  -> Balance precision
+  -> Ledger precision account event
+initLedgerWithOpeningBalance acc balance = Ledger acc balance []
+
+
+-- | Initializes a ledger with the given opening value.
+--
+-- See 'amountFromValue' for the meaning of the concept of value.
+initLedgerWithOpeningValue
   :: KnownNat precision
   => Account account
   -> Quantity precision
   -> Ledger precision account event
-initLedgerWithOpeningBalance acc qty = Ledger acc balance []
+initLedgerWithOpeningValue acc qty = initLedgerWithOpeningBalance acc balance
+  where
+    amount = amountFromValue (accountKind acc) qty
+    balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0
+    balance = updateBalance balance0 amount
+
+
+-- | Initializes a ledger with the given opening quantity.
+--
+-- See 'amountFromQuantity' for the meaning of the concept of quantity.
+initLedgerWithOpeningQuantity
+  :: KnownNat precision
+  => Account account
+  -> Quantity precision
+  -> Ledger precision account event
+initLedgerWithOpeningQuantity acc qty = initLedgerWithOpeningBalance acc balance
   where
     amount = amountFromQuantity (accountKind acc) qty
     balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0
