@@ -5,6 +5,7 @@
 
 module Haspara.Accounting.Journal where
 
+import qualified Data.Aeson                 as Aeson
 import qualified Data.Text                  as T
 import           Data.Time                  (Day)
 import           GHC.Generics               (Generic)
@@ -12,6 +13,7 @@ import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Account (Account(accountKind))
 import           Haspara.Accounting.Amount  (Amount(..), amountFromQuantity, amountFromValue)
 import           Haspara.Accounting.Side    (Side(..))
+import           Haspara.Internal.Aeson     (commonAesonOptions)
 import           Haspara.Quantity           (Quantity, UnsignedQuantity, sumUnsignedQuantity)
 
 
@@ -23,7 +25,15 @@ import           Haspara.Quantity           (Quantity, UnsignedQuantity, sumUnsi
 newtype Journal (precision :: Nat) account event = Journal
   { journalEntries :: [JournalEntry precision account event]
   }
-  deriving (Show)
+  deriving (Generic, Show)
+
+
+instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => Aeson.FromJSON (Journal precision account event) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "journal"
+
+
+instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (Journal precision account event) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "journal"
 
 
 -- | Data definition for a journal entry.
@@ -37,7 +47,15 @@ data JournalEntry (precision :: Nat) account event = JournalEntry
   , journalEntryItems       :: ![JournalEntryItem precision account event]
   , journalEntryDescription :: !T.Text
   }
-  deriving (Show)
+  deriving (Generic, Show)
+
+
+instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => Aeson.FromJSON (JournalEntry precision account event) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "journalEntry"
+
+
+instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (JournalEntry precision account event) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "journalEntry"
 
 
 -- | Returns the total debit amount of a journal entry.
@@ -89,6 +107,14 @@ data JournalEntryItem (precision :: Nat) account event = JournalEntryItem
   , journalEntryItemEvent   :: !event
   }
   deriving (Eq, Generic, Show)
+
+
+instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => Aeson.FromJSON (JournalEntryItem precision account event) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "journalEntryItem"
+
+
+instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (JournalEntryItem precision account event) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "journalEntryItem"
 
 
 -- | Creates a 'JournalEntryItem' from the given signed /quantity/, the account
