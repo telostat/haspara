@@ -8,7 +8,7 @@ import qualified Data.Aeson                 as Aeson
 import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Account (AccountKind)
-import           Haspara.Accounting.Amount  (Amount(Amount), quantityFromAmountWithAccountKind)
+import           Haspara.Accounting.Amount  (Amount(Amount), quantityFromAmount)
 import           Haspara.Accounting.Side    (Side, otherSide)
 import           Haspara.Internal.Aeson     (commonAesonOptions)
 import           Haspara.Quantity           (Quantity, absQuantity)
@@ -128,4 +128,4 @@ toQuantityWithKind
   => AccountKind
   -> Balance precision
   -> Quantity precision
-toQuantityWithKind k = quantityFromAmountWithAccountKind k . toAmount
+toQuantityWithKind k = quantityFromAmount k . toAmount

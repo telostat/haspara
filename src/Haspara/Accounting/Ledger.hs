@@ -14,7 +14,7 @@ import           Data.Time                  (Day)
 import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Account (Account(accountKind))
-import           Haspara.Accounting.Amount  (Amount, amountFromQuantityWithSide)
+import           Haspara.Accounting.Amount  (Amount, amountFromQuantity)
 import           Haspara.Accounting.Balance (Balance(Balance), updateBalance)
 import           Haspara.Accounting.Journal (JournalEntry(..), JournalEntryItem(JournalEntryItem))
 import           Haspara.Accounting.Side    (normalSideByAccountKind)
@@ -101,7 +101,7 @@ initLedgerWithOpeningBalance
   -> Ledger precision account event
 initLedgerWithOpeningBalance acc qty = Ledger acc balance []
   where
-    amount = amountFromQuantityWithSide (accountKind acc) qty
+    amount = amountFromQuantity (accountKind acc) qty
     balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0
     balance = updateBalance balance0 amount
 

@@ -10,9 +10,9 @@ import           Data.Time                  (Day)
 import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
 import           Haspara.Accounting.Account (Account(accountKind))
-import           Haspara.Accounting.Amount  (Amount(Amount, amountSide, amountValue))
-import           Haspara.Accounting.Side    (Side(..), sideByAccountKind)
-import           Haspara.Quantity           (Quantity, UnsignedQuantity, absQuantity, sumUnsignedQuantity)
+import           Haspara.Accounting.Amount  (Amount(..), amountFromQuantity, amountFromValue)
+import           Haspara.Accounting.Side    (Side(..))
+import           Haspara.Quantity           (Quantity, UnsignedQuantity, sumUnsignedQuantity)
 
 
 -- | Data definition for the journal entries of interest (like a general
@@ -91,20 +91,37 @@ data JournalEntryItem (precision :: Nat) account event = JournalEntryItem
   deriving (Eq, Generic, Show)
 
 
--- | Creates a 'JournalEntryItem' from the given signed quantity, the account it
--- belongs to and the event it is originating from.
+-- | Creates a 'JournalEntryItem' from the given signed /quantity/, the account
+-- it belongs to and the event it is originating from.
 --
--- The 'Side' is resolved from the sign of the quantity and the account the item
--- belongs to.
-mkJournalEntryItem
+-- The /quantity/ is defined as in 'amountFromQuantity' function.
+mkJournalEntryItemFromQuantity
   :: KnownNat precision
   => Quantity precision
   -> Account account
   -> event
   -> JournalEntryItem precision account event
-mkJournalEntryItem qty acc evt =
+mkJournalEntryItemFromQuantity qty acc evt =
   JournalEntryItem
-    { journalEntryItemAmount = Amount (sideByAccountKind (accountKind acc) qty) (absQuantity qty)
+    { journalEntryItemAmount = amountFromQuantity (accountKind acc) qty
+    , journalEntryItemAccount = acc
+    , journalEntryItemEvent = evt
+    }
+
+
+-- | Creates a 'JournalEntryItem' from the given signed /value/, the account it
+-- belongs to and the event it is originating from.
+--
+-- The /value/ is defined as in 'amountFromValue' function.
+mkJournalEntryItemFromValue
+  :: KnownNat precision
+  => Quantity precision
+  -> Account account
+  -> event
+  -> JournalEntryItem precision account event
+mkJournalEntryItemFromValue val acc evt =
+  JournalEntryItem
+    { journalEntryItemAmount = amountFromValue (accountKind acc) val
     , journalEntryItemAccount = acc
     , journalEntryItemEvent = evt
     }
