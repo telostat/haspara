@@ -57,7 +57,7 @@ data AccountKind =
   | AccountKindEquity
   | AccountKindRevenue
   | AccountKindExpense
-  deriving (Enum, Eq, Generic, Ord, Show)
+  deriving (Bounded, Enum, Eq, Generic, Ord, Show)
 
 
 instance Hashable AccountKind
