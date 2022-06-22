@@ -1,213 +1,207 @@
--- | This module provides definitions for postings, ledgers and ledger entries.
+-- | This module provides data definitions and functions for ledgers and
+-- postings.
 
 {-# LANGUAGE DataKinds   #-}
 {-# LANGUAGE DerivingVia #-}
 
 module Haspara.Accounting.Ledger where
 
-import           Data.Aeson                 ((.:), (.=))
 import qualified Data.Aeson                 as Aeson
-import qualified Data.Char                  as C
-import qualified Data.List.NonEmpty         as NE
+import qualified Data.Map.Strict            as HM
+import           Data.Maybe                 (fromMaybe, listToMaybe)
 import qualified Data.Text                  as T
 import           Data.Time                  (Day)
 import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Account (Account(accountKind), AccountKind(..))
-import           Haspara.Accounting.Event   (Event(..), eventObject)
+import           Haspara.Accounting.Account (Account(accountKind))
+import           Haspara.Accounting.Amount  (Amount, amountFromQuantity, amountFromValue)
+import           Haspara.Accounting.Balance (Balance(Balance), updateBalance)
+import           Haspara.Accounting.Journal (JournalEntry(..), JournalEntryItem(JournalEntryItem))
+import           Haspara.Accounting.Side    (normalSideByAccountKind)
 import           Haspara.Internal.Aeson     (commonAesonOptions)
-import           Haspara.Quantity           (Quantity, UnsignedQuantity)
-import           Refined                    (unrefine)
+import           Haspara.Quantity           (Quantity)
 
 
--- | Type encoding of a ledger.
-data Ledger a o (s :: Nat) = Ledger
-  { ledgerAccount :: !(Account a)
-  , ledgerOpening :: !(Quantity s)
-  , ledgerClosing :: !(Quantity s)
-  , ledgerRunning :: ![LedgerItem o s]
+-- | Data definition for a general ledger.
+newtype GeneralLedger (precision :: Nat) account event = GeneralLedger
+  { generalLedgerLedgers :: [Ledger precision account event]
   }
-  deriving (Eq, Generic, Ord, Show)
+  deriving (Eq, Generic, Show)
 
 
-instance (Aeson.FromJSON a, Aeson.FromJSON o, KnownNat s) => Aeson.FromJSON (Ledger a o s) where
+instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => Aeson.FromJSON (GeneralLedger precision account event) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "generalLedger"
+
+
+instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (GeneralLedger precision account event) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "generalLedger"
+
+
+-- | Data definition for a ledger.
+data Ledger (precision :: Nat) account event = Ledger
+  { ledgerAccount :: !(Account account)
+  , ledgerOpening :: !(Balance precision)
+  , ledgerRunning :: ![LedgerEntry precision event]
+  }
+  deriving (Eq, Generic, Show)
+
+
+instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => Aeson.FromJSON (Ledger precision account event) where
   parseJSON = Aeson.genericParseJSON $ commonAesonOptions "ledger"
 
 
-instance (Aeson.ToJSON a, Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Ledger a o s) where
+instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (Ledger precision account event) where
+  -- TODO: Add ledgerClosing, too.
   toJSON = Aeson.genericToJSON $ commonAesonOptions "ledger"
 
 
+-- | Returns the closing balance of a ledger.
+ledgerClosing
+  :: KnownNat precision
+  => Ledger precision account event
+  -> Balance precision
+ledgerClosing ledger = maybe (ledgerOpening ledger) ledgerEntryBalance (listToMaybe (ledgerRunning ledger))
+
+
 -- | Type encoding of a ledger item.
-data LedgerItem o (s :: Nat) = LedgerItem
-  { ledgerItemEntry   :: !(Entry o s)
-  , ledgerItemBalance :: !(Quantity s)
+data LedgerEntry (precision :: Nat) event = LedgerEntry
+  { ledgerEntryDate        :: !Day
+  , ledgerEntryAmount      :: !(Amount precision)
+  , ledgerEntryDescription :: !T.Text
+  , ledgerEntryEvent       :: !event
+  , ledgerEntryPostingId   :: !T.Text
+  , ledgerEntryBalance     :: !(Balance precision)
   }
-  deriving (Eq, Generic, Ord, Show)
+  deriving (Eq, Generic, Show)
 
 
-instance (Aeson.FromJSON o, KnownNat s) => Aeson.FromJSON (LedgerItem o s) where
-  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "ledgerItem"
+instance (KnownNat precision, Aeson.FromJSON event) => Aeson.FromJSON (LedgerEntry precision event) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "ledgerEntry"
 
 
-instance (Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (LedgerItem o s) where
-  toJSON = Aeson.genericToJSON $ commonAesonOptions "ledgerItem"
+instance (KnownNat precision, Aeson.ToJSON event) => Aeson.ToJSON (LedgerEntry precision event) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "ledgerEntry"
 
 
--- | Creates a ledger from a given list of 'Entry' values.
-mkLedger :: KnownNat s => Account a -> Quantity s -> [Entry o s] -> Ledger a o s
-mkLedger a o = foldl addEntry (Ledger a o o [])
-
-
--- | Adds a new entry to a ledger.
-addEntry :: KnownNat s => Ledger a o s -> Entry o s -> Ledger a o s
-addEntry l@(Ledger _ _ c r) e = l { ledgerClosing = balance, ledgerRunning = r <> [item]}
+-- | Initializes an empty ledger for a given account.
+initLedger
+  :: KnownNat precision
+  => Account account
+  -> Ledger precision account event
+initLedger acc = Ledger acc balance []
   where
-    balance = c + entryQuantity e
-    item = LedgerItem e balance
+    balance = Balance (normalSideByAccountKind (accountKind acc)) 0
 
 
--- | Type encoding for a posting.
+-- | Initializes a ledger with the given opening balance.
+initLedgerWithOpeningBalance
+  :: KnownNat precision
+  => Account account
+  -> Balance precision
+  -> Ledger precision account event
+initLedgerWithOpeningBalance acc balance = Ledger acc balance []
+
+
+-- | Initializes a ledger with the given opening value.
 --
--- >>> :set -XDataKinds
--- >>> import Haspara.Accounting
--- >>> import Refined
--- >>> import qualified Data.Aeson as Aeson
--- >>> import qualified Data.List.NonEmpty as NE
--- >>> let date = read "2021-01-01"
--- >>> let oid = 1 :: Int
--- >>> let qty = $$(refineTH 42) :: UnsignedQuantity 2
--- >>> let event = EventDecrement date oid qty
--- >>> let account = Account AccountKindAsset ("Cash" :: String, 1 ::Int)
--- >>> let posting =  Posting . NE.fromList $ [(event, account)]
--- >>> let json = Aeson.encode posting
--- >>> json
--- "[[{\"qty\":42.0,\"type\":\"DECREMENT\",\"obj\":1,\"date\":\"2021-01-01\"},{\"kind\":\"ASSET\",\"object\":[\"Cash\",1]}]]"
--- >>> Aeson.decode json :: Maybe (Posting (String, Int) Int 2)
--- Just (Posting ((EventDecrement 2021-01-01 1 (Refined 42.00),Account {accountKind = AccountKindAsset, accountObject = ("Cash",1)}) :| []))
--- >>> Aeson.decode json == Just posting
--- True
-newtype Posting a o (s :: Nat) = Posting (NE.NonEmpty (Event o s, Account a))
-  deriving (Eq, Generic, Ord, Show)
-
-
-instance (Aeson.FromJSON a, Aeson.FromJSON o, KnownNat s) => Aeson.FromJSON (Posting a o s) where
-  parseJSON = Aeson.genericParseJSON Aeson.defaultOptions
-
-
-instance (Aeson.ToJSON a, Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Posting a o s) where
-  toJSON = Aeson.genericToJSON Aeson.defaultOptions
-
-
--- | Returns the list of posting event sources.
-postingEvents :: (KnownNat s) => Posting a o s -> [o]
-postingEvents (Posting es)  = eventObject . fst <$> NE.toList es
-
-
--- | Posts an event.
-post :: (KnownNat s) => Posting a o s -> [(Account a, Entry o s)]
-post (Posting xs)       = go (NE.toList xs)
+-- See 'amountFromValue' for the meaning of the concept of value.
+initLedgerWithOpeningValue
+  :: KnownNat precision
+  => Account account
+  -> Quantity precision
+  -> Ledger precision account event
+initLedgerWithOpeningValue acc qty = initLedgerWithOpeningBalance acc balance
   where
-    go []              = []
-    go ((ev, ac) : ys) = (ac, buildEntry ev (accountKind ac)) : go ys
+    amount = amountFromValue (accountKind acc) qty
+    balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0
+    balance = updateBalance balance0 amount
 
 
--- | Encoding of a posting entry.
+-- | Initializes a ledger with the given opening quantity.
 --
--- >>> :set -XDataKinds
--- >>> import Refined
--- >>> let date = read "2021-01-01"
--- >>> let oid = 1 :: Int
--- >>> let qty = $$(refineTH 42) :: UnsignedQuantity 2
--- >>> let entry = EntryDebit date oid qty
--- >>> let json = Aeson.encode entry
--- >>> json
--- "{\"qty\":42.0,\"type\":\"DEBIT\",\"obj\":1,\"date\":\"2021-01-01\"}"
--- >>> Aeson.decode json :: Maybe (Entry Int 2)
--- Just (EntryDebit 2021-01-01 1 (Refined 42.00))
--- >>> Aeson.decode json == Just entry
--- True
-data Entry o (s :: Nat) =
-    EntryDebit Day o (UnsignedQuantity s)
-  | EntryCredit Day o (UnsignedQuantity s)
-  deriving (Eq, Ord, Show)
+-- See 'amountFromQuantity' for the meaning of the concept of quantity.
+initLedgerWithOpeningQuantity
+  :: KnownNat precision
+  => Account account
+  -> Quantity precision
+  -> Ledger precision account event
+initLedgerWithOpeningQuantity acc qty = initLedgerWithOpeningBalance acc balance
+  where
+    amount = amountFromQuantity (accountKind acc) qty
+    balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0
+    balance = updateBalance balance0 amount
 
 
-instance (Aeson.FromJSON o, KnownNat s) => Aeson.FromJSON (Entry o s) where
-  parseJSON = Aeson.withObject "Entry" $ \o -> do
-    dorc <- o .: "type"
-    cons <- case T.map C.toUpper dorc of
-      "DEBIT"  -> pure EntryDebit
-      "CREDIT" -> pure EntryCredit
-      x        -> fail ("Unknown entry type: " <> T.unpack x)
-    date <- o .: "date"
-    obj <- o .: "obj"
-    qty <- o .: "qty"
-    pure (cons date obj qty)
+-- | Posts a given list of journal entries to the given general ledger and
+-- returns the new general ledger.
+postEntries
+  :: KnownNat precision
+  => Eq account
+  => Ord account
+  => GeneralLedger precision account event
+  -> [JournalEntry precision account event]
+  -> GeneralLedger precision account event
+postEntries = foldl postEntry
 
 
-instance (Aeson.ToJSON o, KnownNat s) => Aeson.ToJSON (Entry o s) where
-  toJSON x = case x of
-    EntryDebit d o q  -> Aeson.object ["type" .= ("DEBIT" :: T.Text), "date" .= d, "obj" .= o, "qty" .= q]
-    EntryCredit d o q -> Aeson.object ["type" .= ("CREDIT" :: T.Text), "date" .= d, "obj" .= o, "qty" .= q]
+-- | Posts a given journal entry to the given general ledger and returns the new
+-- general ledger.
+postEntry
+  :: KnownNat precision
+  => Eq account
+  => Ord account
+  => GeneralLedger precision account event
+  -> JournalEntry precision account event
+  -> GeneralLedger precision account event
+postEntry gl je = foldl (`postEntryItem` je) gl (journalEntryItems je)
 
 
--- | Returns the date of the posting entry.
-entryDate :: KnownNat s => Entry o s -> Day
-entryDate (EntryDebit d _ _)  = d
-entryDate (EntryCredit d _ _) = d
+-- | Posts a given journal entry item of a given journal entry to the given
+-- general ledger and returns the new general ledger.
+postEntryItem
+  :: KnownNat precision
+  => Eq account
+  => Ord account
+  => GeneralLedger precision account event
+  -> JournalEntry precision account event
+  -> JournalEntryItem precision account event
+  -> GeneralLedger precision account event
+postEntryItem gl je (JournalEntryItem amt acc evt) =
+  let
+    ledgers = generalLedgerLedgers gl
+    ledgersDb = HM.fromList $ zip (fmap ledgerAccount ledgers) ledgers
+    ledgerCurr = fromMaybe (initLedger acc) $ HM.lookup acc ledgersDb
+    ledgerNext = postItem ledgerCurr (journalEntryDate je) amt (journalEntryDescription je) evt (journalEntryId je)
+    ledgersDbNext = HM.insert acc ledgerNext ledgersDb
+  in
+    GeneralLedger
+      { generalLedgerLedgers = HM.elems ledgersDbNext
+      }
 
 
--- | Returns the quantity of the posting entry.
-entryQuantity :: KnownNat s => Entry o s -> Quantity s
-entryQuantity (EntryDebit _ _ q)  = unrefine q
-entryQuantity (EntryCredit _ _ q) = -(unrefine q)
-
-
--- | Returns the source object of the posting entry.
-entryObject :: KnownNat s => Entry o s -> o
-entryObject (EntryDebit _ o _)  = o
-entryObject (EntryCredit _ o _) = o
-
-
--- | Returns the debit quantity of the posting entry.
-entryDebit :: KnownNat s => Entry o s -> Maybe (UnsignedQuantity s)
-entryDebit (EntryDebit _ _ x) = Just x
-entryDebit EntryCredit {}     = Nothing
-
-
--- | Returns the credit quantity of the posting entry.
-entryCredit :: KnownNat s => Entry o s -> Maybe (UnsignedQuantity s)
-entryCredit EntryDebit {}       = Nothing
-entryCredit (EntryCredit _ _ x) = Just x
-
-
--- | Consumes an event and a type of account, and produces a posting entry.
---
--- Note the following map as a guide:
---
--- +-----------------------+----------+----------+
--- | Kind of account       | Debit    | Credit   |
--- +-----------------------+----------+----------+
--- | Asset                 | Increase | Decrease |
--- +-----------------------+----------+----------+
--- | Liability             | Decrease | Increase |
--- +-----------------------+----------+----------+
--- | Equity/Capital        | Decrease | Increase |
--- +-----------------------+----------+----------+
--- | Income/Revenue        | Decrease | Increase |
--- +-----------------------+----------+----------+
--- | Expense/Cost/Dividend | Increase | Decrease |
--- +-----------------------+----------+----------+
---
-buildEntry :: (KnownNat s) => Event o s -> AccountKind -> Entry o s
-buildEntry (EventDecrement d o x) AccountKindAsset     = EntryCredit d o x
-buildEntry (EventIncrement d o x) AccountKindAsset     = EntryDebit  d o x
-buildEntry (EventDecrement d o x) AccountKindLiability = EntryDebit  d o x
-buildEntry (EventIncrement d o x) AccountKindLiability = EntryCredit d o x
-buildEntry (EventDecrement d o x) AccountKindEquity    = EntryDebit  d o x
-buildEntry (EventIncrement d o x) AccountKindEquity    = EntryCredit d o x
-buildEntry (EventDecrement d o x) AccountKindRevenue   = EntryDebit  d o x
-buildEntry (EventIncrement d o x) AccountKindRevenue   = EntryCredit d o x
-buildEntry (EventDecrement d o x) AccountKindExpense   = EntryCredit d o x
-buildEntry (EventIncrement d o x) AccountKindExpense   = EntryDebit  d o x
+-- | Performs a posting to the given ledger.
+postItem
+  :: KnownNat precision
+  => Ledger precision account event
+  -> Day
+  -> Amount precision
+  -> T.Text
+  -> event
+  -> T.Text
+  -> Ledger precision account event
+postItem ledger date amt dsc evt pid =
+  let
+    balanceLast = ledgerClosing ledger
+    balanceNext = updateBalance balanceLast amt
+    item = LedgerEntry
+      { ledgerEntryDate = date
+      , ledgerEntryAmount = amt
+      , ledgerEntryDescription = dsc
+      , ledgerEntryEvent = evt
+      , ledgerEntryPostingId = pid
+      , ledgerEntryBalance = balanceNext
+      }
+  in
+    ledger
+      { ledgerRunning = item : ledgerRunning ledger
+      }

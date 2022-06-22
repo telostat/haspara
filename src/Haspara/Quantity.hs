@@ -17,7 +17,8 @@ import           GHC.Generics               (Generic)
 import           GHC.TypeLits               (KnownNat, Nat, natVal, type (+))
 import qualified Language.Haskell.TH.Syntax as TH
 import qualified Numeric.Decimal            as D
-import           Refined                    (NonNegative, Refined)
+import           Refined                    (NonNegative, Refined, unrefine)
+import           Refined.Unsafe             (unsafeRefine)
 
 
 -- * Data Definition
@@ -293,6 +294,32 @@ times q1 q2 = roundQuantity (timesLossless q1 q2)
 -- 0.1764
 timesLossless :: (KnownNat s, KnownNat k) => Quantity s -> Quantity k -> Quantity (s + k)
 timesLossless (MkQuantity d1) (MkQuantity d2) = MkQuantity (D.timesDecimal d1 d2)
+
+
+-- | Returns the total of a list of unsigned quantities.
+--
+-- >>> sumUnsignedQuantity [] :: UnsignedQuantity 2
+-- Refined 0.00
+sumUnsignedQuantity
+  :: KnownNat s
+  => [UnsignedQuantity s]
+  -> UnsignedQuantity s
+sumUnsignedQuantity = unsafeRefine . sum . fmap unrefine
+
+
+-- | Returns the absolute value of the 'Quantity' as 'UnsignedQuantity'.
+--
+-- >>> abs (mkQuantity 0.42 :: Quantity 2)
+-- 0.42
+-- >>> abs (mkQuantity 0 :: Quantity 2)
+-- 0.00
+-- >>> abs (mkQuantity (-0.42) :: Quantity 2)
+-- 0.42
+absQuantity
+  :: KnownNat s
+  => Quantity s
+  -> UnsignedQuantity s
+absQuantity = unsafeRefine . abs
 
 
 -- * Internal

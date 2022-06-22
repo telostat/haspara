@@ -30,8 +30,12 @@ library
       Haspara
       Haspara.Accounting
       Haspara.Accounting.Account
-      Haspara.Accounting.Event
+      Haspara.Accounting.Amount
+      Haspara.Accounting.Balance
+      Haspara.Accounting.Journal
       Haspara.Accounting.Ledger
+      Haspara.Accounting.Side
+      Haspara.Accounting.TrialBalance
       Haspara.Currency
       Haspara.FxQuote
       Haspara.Internal.Aeson
