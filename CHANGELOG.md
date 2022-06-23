@@ -2,6 +2,18 @@
 ## [Unreleased]
 
 
+<a name="0.0.0.5"></a>
+## [0.0.0.5] - 2022-06-23
+### Chore
+- bump development version to 0.0.0.5
+
+### Feat
+- **accounting:** add Aeson instances to Haspara.Accounting.Journal module
+
+### Pull Requests
+- Merge pull request [#11](https://github.com/telostat/haspara/issues/11) from telostat/vst/add-missing-aeson-instances
+
+
 <a name="0.0.0.4"></a>
 ## [0.0.0.4] - 2022-06-22
 ### Chore
@@ -9,6 +21,7 @@
 - start working on Haspara.Accounting.Journal module
 - add new functions to Haspara.Quantity module
 - bump development version to 0.0.0.4
+- **release:** 0.0.0.4
 
 ### Feat
 - add Haspara.Accounting.Side module
@@ -106,7 +119,8 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.4...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.5...HEAD
+[0.0.0.5]: https://github.com/telostat/haspara/compare/0.0.0.4...0.0.0.5
 [0.0.0.4]: https://github.com/telostat/haspara/compare/0.0.0.3...0.0.0.4
 [0.0.0.3]: https://github.com/telostat/haspara/compare/0.0.0.2...0.0.0.3
 [0.0.0.2]: https://github.com/telostat/haspara/compare/0.0.0.1...0.0.0.2
