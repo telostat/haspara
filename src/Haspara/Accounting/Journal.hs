@@ -1,20 +1,22 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
+
+
 -- | This module provides data definitions and functions to work with journal
 -- entries.
-
-{-# LANGUAGE DataKinds #-}
-
 module Haspara.Accounting.Journal where
 
-import qualified Data.Aeson                 as Aeson
-import qualified Data.Text                  as T
-import           Data.Time                  (Day)
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Account (Account(accountKind))
-import           Haspara.Accounting.Amount  (Amount(..), amountFromQuantity, amountFromValue)
-import           Haspara.Accounting.Side    (Side(..))
-import           Haspara.Internal.Aeson     (commonAesonOptions)
-import           Haspara.Quantity           (Quantity, UnsignedQuantity, sumUnsignedQuantity)
+import qualified Data.Aeson as Aeson
+import qualified Data.Text as T
+import Data.Time (Day)
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Accounting.Account (Account (accountKind))
+import Haspara.Accounting.Amount (Amount (..), amountFromQuantity, amountFromValue)
+import Haspara.Accounting.Side (Side (..))
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity, UnsignedQuantity, sumUnsignedQuantity)
 
 
 -- | Data definition for the journal entries of interest (like a general
@@ -42,9 +44,9 @@ instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson
 -- of 'JournalEntryItem's. Journal entry definition is polymorphic over the
 -- precision of the monetary quantities, the account and event objects.
 data JournalEntry (precision :: Nat) account event = JournalEntry
-  { journalEntryId          :: !T.Text
-  , journalEntryDate        :: !Day
-  , journalEntryItems       :: ![JournalEntryItem precision account event]
+  { journalEntryId :: !T.Text
+  , journalEntryDate :: !Day
+  , journalEntryItems :: ![JournalEntryItem precision account event]
   , journalEntryDescription :: !T.Text
   }
   deriving (Generic, Show)
@@ -64,10 +66,10 @@ journalEntryTotalDebit
   => JournalEntry precision account event
   -> UnsignedQuantity precision
 journalEntryTotalDebit =
-    sumUnsignedQuantity
-  . fmap (amountValue . journalEntryItemAmount)
-  . filter ((==) SideDebit . amountSide . journalEntryItemAmount)
-  . journalEntryItems
+  sumUnsignedQuantity
+    . fmap (amountValue . journalEntryItemAmount)
+    . filter ((==) SideDebit . amountSide . journalEntryItemAmount)
+    . journalEntryItems
 
 
 -- | Returns the total credit amount of a journal entry.
@@ -76,10 +78,10 @@ journalEntryTotalCredit
   => JournalEntry precision account event
   -> UnsignedQuantity precision
 journalEntryTotalCredit =
-    sumUnsignedQuantity
-  . fmap (amountValue . journalEntryItemAmount)
-  . filter ((==) SideCredit . amountSide . journalEntryItemAmount)
-  . journalEntryItems
+  sumUnsignedQuantity
+    . fmap (amountValue . journalEntryItemAmount)
+    . filter ((==) SideCredit . amountSide . journalEntryItemAmount)
+    . journalEntryItems
 
 
 -- | Predicate to check if a journal entry is balanced or not.
@@ -90,9 +92,10 @@ isJournalEntryBalanced
   :: KnownNat precision
   => JournalEntry precision account event
   -> Bool
-isJournalEntryBalanced = (==)
-  <$> journalEntryTotalDebit
-  <*> journalEntryTotalCredit
+isJournalEntryBalanced =
+  (==)
+    <$> journalEntryTotalDebit
+    <*> journalEntryTotalCredit
 
 
 -- | Data definition for a journal entry item.
@@ -102,9 +105,9 @@ isJournalEntryBalanced = (==)
 -- item definition is polymorphic over the precision of the monetary quantities,
 -- the account and event objects.
 data JournalEntryItem (precision :: Nat) account event = JournalEntryItem
-  { journalEntryItemAmount  :: !(Amount precision)
+  { journalEntryItemAmount :: !(Amount precision)
   , journalEntryItemAccount :: !(Account account)
-  , journalEntryItemEvent   :: !event
+  , journalEntryItemEvent :: !event
   }
   deriving (Eq, Generic, Show)
 

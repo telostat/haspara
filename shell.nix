@@ -1,19 +1,30 @@
-{ pkgs ? import (fetchTarball https://github.com/NixOS/nixpkgs/archive/22.05.tar.gz) { }
-, ghcVersion ? "ghc902"
-, ...
-}:
+{ ... }:
 
-with pkgs;
+let
+  ## Import this codebase's Nix helper set:
+  nix = import ./nix { };
 
-haskell.lib.buildStackProject rec {
-  name = "haspara-devshell";
-  src = ./.;
-  ghc = haskell.packages.${ghcVersion}.ghc;
+  ## Get packages:
+  pkgs = nix.pkgs;
+in
+pkgs.mkShell {
   buildInputs = [
-    haskell-language-server
-    haskellPackages.weeder
-    hlint
-    stack
-    stylish-haskell
-  ];
+    ## Fancy stuff:
+    pkgs.figlet
+    pkgs.lolcat
+
+    ## Release stuff:
+    pkgs.busybox
+    pkgs.gh
+    pkgs.git
+    pkgs.git-chglog
+  ] ++ nix.haskell-dev-tools;
+
+  shellHook = ''
+    figlet -w 999 "HASPARA DEV SHELL" | lolcat -S 42
+
+    ## Make sure that doctest finds correct GHC executable and libraries:
+    export NIX_GHC=${nix.ghc}/bin/ghc
+    export NIX_GHC_LIBDIR=${nix.ghc}/lib/${nix.ghc.meta.name}
+  '';
 }

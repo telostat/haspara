@@ -18,15 +18,15 @@ rudimentary (and experimental) accounting functionality.
 Before committing code to repository, reformat the code:
 
 ```sh
-stylish-haskell -i -r src/
+fourmolu -i src/ test/
 ```
 
 Compile the codebase, check warnings and errors:
 
 ```sh
-stack test
-stack build
-stack haddock
+cabal build -O0
+cabal test -O0
+cabal haddock -O0
 ```
 
 Run [hlint](https://github.com/ndmitchell/hlint):
@@ -43,45 +43,34 @@ weeder --require-hs-files
 
 ## Making Releases
 
-1. Switch to `develop` branch:
-
-    ```sh
-    git checkout develop
-    ```
-
-1. Ensure that your development branch is up to date:
-
-    ```sh
-    git pull
-    ```
-
 1. Checkout `main` branch:
 
     ```sh
     git checkout main
     ```
 
-1. Merge `develop` branch to `main`:
+2. Ensure that your branch is up to date:
 
     ```sh
-    git merge --no-ff develop
+    git pull
     ```
 
-1. Update the `version` information in [package.yaml](./package.yaml) if
-   required and recompile the project to reflect the change on the `.cabal`
-   file:
+3. Update the `version` information in [package.yaml](./package.yaml) if
+   required, run `hpack` to reflect the change on the `.cabal` file, and
+   recompile the project:
 
     ```sh
-    stack build
+    hpack
+    cabal build -O0
     ```
 
-1. Update [CHANGELOG.md](./CHANGELOG.md) file:
+4. Update [CHANGELOG.md](./CHANGELOG.md) file:
 
     ```sh
     git-chglog --next-tag <NEW-VERSION> -o CHANGELOG.md
     ```
 
-1. Commit, tag and push:
+5. Commit, tag and push:
 
     ```sh
     git commit -am "chore(release): <NEW-VERSION>"
@@ -89,38 +78,21 @@ weeder --require-hs-files
     git push --follow-tags origin main
     ```
 
-1. Release to Hackage as a candidate first and check the result:
+6. Create the package, upload to Hackage as a candidate first and check the result:
 
     ```sh
-    stack upload --candidate .
+    cabal clean
+    cabal build -O0
+    cabal test -O0
+    cabal haddock -O0
+    cabal sdist
+    cabal upload <path to .tar.gz archive>
     ```
 
-1. If the candidate package release works fine, release to Hackage:
+7. If the candidate package release works fine, release to Hackage:
 
     ```sh
-    stack upload .
-    ```
-
-1. Checkout to `develop` and rebase onto `main`:
-
-    ```sh
-    git checkout develop
-    git rebase main
-    ```
-
-1. Update the `version` information in [package.yaml](./package.yaml) with the
-   upcoming version and recompile the project to reflect the change on the
-   `.cabal` file:
-
-   ```sh
-   stack build
-   ```
-
-1. Commit and push:
-
-    ```sh
-    git commit -am "chore: bump development version to <UPCOMING-VERSION>"
-    git push
+    cabal upload --publish <path to .tar.gz archive>
     ```
 
 ## License

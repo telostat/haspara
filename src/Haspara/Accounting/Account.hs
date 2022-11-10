@@ -1,20 +1,19 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 -- | This module provides definitions for acccounts and types of accounts as
 -- they are used in accounting reporting.
-
-{-# LANGUAGE DataKinds   #-}
-{-# LANGUAGE DerivingVia #-}
-
 module Haspara.Accounting.Account where
 
-import qualified Data.Aeson             as Aeson
-import           Data.Hashable          (Hashable)
-import qualified Data.Text              as T
-import           GHC.Generics           (Generic)
-import           Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOptions)
+import qualified Data.Aeson as Aeson
+import Data.Hashable (Hashable)
+import qualified Data.Text as T
+import GHC.Generics (Generic)
+import Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOptions)
 
 
 -- * Account Kind
--- $accountKind
 
 
 -- | Type encoding for ledger account type.
@@ -31,6 +30,7 @@ import           Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOp
 --
 -- 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances, too:
 --
+-- >>> :set -XTypeApplications
 -- >>> Data.Aeson.decode @AccountKind "\"ASSET\""
 -- Just AccountKindAsset
 -- >>> Data.Aeson.decode @AccountKind "\"LIABILITY\""
@@ -51,8 +51,8 @@ import           Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOp
 -- "\"REVENUE\""
 -- >>> Data.Aeson.encode AccountKindExpense
 -- "\"EXPENSE\""
-data AccountKind =
-    AccountKindAsset
+data AccountKind
+  = AccountKindAsset
   | AccountKindLiability
   | AccountKindEquity
   | AccountKindRevenue
@@ -84,15 +84,14 @@ instance Aeson.ToJSON AccountKind where
 -- >>> accountKindText AccountKindExpense
 -- "Expense"
 accountKindText :: AccountKind -> T.Text
-accountKindText AccountKindAsset     = "Asset"
+accountKindText AccountKindAsset = "Asset"
 accountKindText AccountKindLiability = "Liability"
-accountKindText AccountKindEquity    = "Equity"
-accountKindText AccountKindRevenue   = "Revenue"
-accountKindText AccountKindExpense   = "Expense"
+accountKindText AccountKindEquity = "Equity"
+accountKindText AccountKindRevenue = "Revenue"
+accountKindText AccountKindExpense = "Expense"
 
 
 -- * Account
--- $account
 
 
 -- | Type encoding for account values.
@@ -102,6 +101,7 @@ accountKindText AccountKindExpense   = "Expense"
 -- use-site to use its own account identity and accompanying information when
 -- required.
 --
+-- >>> :set -XTypeApplications
 -- >>> let acc = Account AccountKindAsset (1 ::Int)
 -- >>> Data.Aeson.encode acc
 -- "{\"kind\":\"ASSET\",\"object\":1}"
@@ -110,7 +110,7 @@ accountKindText AccountKindExpense   = "Expense"
 -- >>> Data.Aeson.decode (Data.Aeson.encode acc) == Just acc
 -- True
 data Account o = Account
-  { accountKind   :: !AccountKind
+  { accountKind :: !AccountKind
   , accountObject :: !o
   }
   deriving (Eq, Generic, Ord, Show)

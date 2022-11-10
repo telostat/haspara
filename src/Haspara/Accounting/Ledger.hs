@@ -1,25 +1,25 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 -- | This module provides data definitions and functions for ledgers and
 -- postings.
-
-{-# LANGUAGE DataKinds   #-}
-{-# LANGUAGE DerivingVia #-}
-
 module Haspara.Accounting.Ledger where
 
-import qualified Data.Aeson                 as Aeson
-import qualified Data.Map.Strict            as HM
-import           Data.Maybe                 (fromMaybe, listToMaybe)
-import qualified Data.Text                  as T
-import           Data.Time                  (Day)
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Account (Account(accountKind))
-import           Haspara.Accounting.Amount  (Amount, amountFromQuantity, amountFromValue)
-import           Haspara.Accounting.Balance (Balance(Balance), updateBalance)
-import           Haspara.Accounting.Journal (JournalEntry(..), JournalEntryItem(JournalEntryItem))
-import           Haspara.Accounting.Side    (normalSideByAccountKind)
-import           Haspara.Internal.Aeson     (commonAesonOptions)
-import           Haspara.Quantity           (Quantity)
+import qualified Data.Aeson as Aeson
+import qualified Data.Map.Strict as HM
+import Data.Maybe (fromMaybe, listToMaybe)
+import qualified Data.Text as T
+import Data.Time (Day)
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Accounting.Account (Account (accountKind))
+import Haspara.Accounting.Amount (Amount, amountFromQuantity, amountFromValue)
+import Haspara.Accounting.Balance (Balance (Balance), updateBalance)
+import Haspara.Accounting.Journal (JournalEntry (..), JournalEntryItem (JournalEntryItem))
+import Haspara.Accounting.Side (normalSideByAccountKind)
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity)
 
 
 -- | Data definition for a general ledger.
@@ -65,12 +65,12 @@ ledgerClosing ledger = maybe (ledgerOpening ledger) ledgerEntryBalance (listToMa
 
 -- | Type encoding of a ledger item.
 data LedgerEntry (precision :: Nat) event = LedgerEntry
-  { ledgerEntryDate        :: !Day
-  , ledgerEntryAmount      :: !(Amount precision)
+  { ledgerEntryDate :: !Day
+  , ledgerEntryAmount :: !(Amount precision)
   , ledgerEntryDescription :: !T.Text
-  , ledgerEntryEvent       :: !event
-  , ledgerEntryPostingId   :: !T.Text
-  , ledgerEntryBalance     :: !(Balance precision)
+  , ledgerEntryEvent :: !event
+  , ledgerEntryPostingId :: !T.Text
+  , ledgerEntryBalance :: !(Balance precision)
   }
   deriving (Eq, Generic, Show)
 
@@ -167,16 +167,14 @@ postEntryItem
   -> JournalEntryItem precision account event
   -> GeneralLedger precision account event
 postEntryItem gl je (JournalEntryItem amt acc evt) =
-  let
-    ledgers = generalLedgerLedgers gl
-    ledgersDb = HM.fromList $ zip (fmap ledgerAccount ledgers) ledgers
-    ledgerCurr = fromMaybe (initLedger acc) $ HM.lookup acc ledgersDb
-    ledgerNext = postItem ledgerCurr (journalEntryDate je) amt (journalEntryDescription je) evt (journalEntryId je)
-    ledgersDbNext = HM.insert acc ledgerNext ledgersDb
-  in
-    GeneralLedger
-      { generalLedgerLedgers = HM.elems ledgersDbNext
-      }
+  let ledgers = generalLedgerLedgers gl
+      ledgersDb = HM.fromList $ zip (fmap ledgerAccount ledgers) ledgers
+      ledgerCurr = fromMaybe (initLedger acc) $ HM.lookup acc ledgersDb
+      ledgerNext = postItem ledgerCurr (journalEntryDate je) amt (journalEntryDescription je) evt (journalEntryId je)
+      ledgersDbNext = HM.insert acc ledgerNext ledgersDb
+   in GeneralLedger
+        { generalLedgerLedgers = HM.elems ledgersDbNext
+        }
 
 
 -- | Performs a posting to the given ledger.
@@ -190,18 +188,17 @@ postItem
   -> T.Text
   -> Ledger precision account event
 postItem ledger date amt dsc evt pid =
-  let
-    balanceLast = ledgerClosing ledger
-    balanceNext = updateBalance balanceLast amt
-    item = LedgerEntry
-      { ledgerEntryDate = date
-      , ledgerEntryAmount = amt
-      , ledgerEntryDescription = dsc
-      , ledgerEntryEvent = evt
-      , ledgerEntryPostingId = pid
-      , ledgerEntryBalance = balanceNext
-      }
-  in
-    ledger
-      { ledgerRunning = item : ledgerRunning ledger
-      }
+  let balanceLast = ledgerClosing ledger
+      balanceNext = updateBalance balanceLast amt
+      item =
+        LedgerEntry
+          { ledgerEntryDate = date
+          , ledgerEntryAmount = amt
+          , ledgerEntryDescription = dsc
+          , ledgerEntryEvent = evt
+          , ledgerEntryPostingId = pid
+          , ledgerEntryBalance = balanceNext
+          }
+   in ledger
+        { ledgerRunning = item : ledgerRunning ledger
+        }

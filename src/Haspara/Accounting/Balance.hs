@@ -1,18 +1,19 @@
--- | This module provides definitions for balances used as in accounting.
-
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
 
+-- | This module provides definitions for balances used as in accounting.
 module Haspara.Accounting.Balance where
 
-import qualified Data.Aeson                 as Aeson
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Account (AccountKind)
-import           Haspara.Accounting.Amount  (Amount(Amount), quantityFromAmount, valueFromAmount)
-import           Haspara.Accounting.Side    (Side(..), otherSide)
-import           Haspara.Internal.Aeson     (commonAesonOptions)
-import           Haspara.Quantity           (Quantity, absQuantity)
-import           Refined                    (unrefine)
+import qualified Data.Aeson as Aeson
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Accounting.Account (AccountKind)
+import Haspara.Accounting.Amount (Amount (Amount), quantityFromAmount, valueFromAmount)
+import Haspara.Accounting.Side (Side (..), otherSide)
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity, absQuantity)
+import Refined (unrefine)
 
 
 -- | Data definition for balances.
@@ -22,7 +23,7 @@ import           Refined                    (unrefine)
 --
 -- See https://www.accountingtools.com/articles/what-is-a-negative-balance.html
 data Balance (precision :: Nat) = Balance
-  { balanceSide  :: !Side
+  { balanceSide :: !Side
   , balanceValue :: !(Quantity precision)
   }
   deriving (Eq, Generic, Show)
@@ -32,6 +33,8 @@ data Balance (precision :: Nat) = Balance
 --
 -- For normal balances:
 --
+-- >>> :set -XDataKinds
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.eitherDecode "{\"side\": \"db\", \"value\": 42}" :: Either String (Balance 2)
 -- Right (Balance {balanceSide = SideDebit, balanceValue = 42.00})
 -- >>> Aeson.eitherDecode "{\"side\": \"cr\", \"value\": 42}" :: Either String (Balance 2)
@@ -51,6 +54,7 @@ instance KnownNat precision => Aeson.FromJSON (Balance precision) where
 --
 -- For normal balances:
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Accounting.Side
 -- >>> import Haspara.Quantity
 -- >>> Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2))
@@ -82,7 +86,7 @@ balanceDebit
   => Balance precision
   -> Maybe (Quantity precision)
 balanceDebit (Balance SideDebit v) = Just v
-balanceDebit _                     = Nothing
+balanceDebit _ = Nothing
 
 
 -- | Returns the credit quantity, if any.
@@ -91,11 +95,12 @@ balanceCredit
   => Balance precision
   -> Maybe (Quantity precision)
 balanceCredit (Balance SideCredit v) = Just v
-balanceCredit _                      = Nothing
+balanceCredit _ = Nothing
 
 
 -- | Updates the balance with the given amount.
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Accounting.Amount
 -- >>> import Haspara.Accounting.Side
 -- >>> import Refined.Unsafe
@@ -123,6 +128,7 @@ updateBalance (Balance bSide bVal) (Amount aSide aVal) =
 
 -- | Converts the balance to amount.
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Accounting.Side
 -- >>> amountFromBalance (Balance SideDebit 42 :: Balance 2)
 -- Amount {amountSide = SideDebit, amountValue = Refined 42.00}

@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- | This module provides definitions for and functions to work with
 -- Debit/Credit dichotomy which is essential to double-entry bookkeeping.
 --
@@ -9,14 +11,13 @@
 -- This module provides 'Aeson.FromJSON' and 'Aeson.ToJSON' instances for 'Side'
 -- as well. Following accounting conventions, we chose the JSON value for
 -- "Debit" as @"db"@, and for "Credit" as @"cr"@.
-
 module Haspara.Accounting.Side where
 
-import qualified Data.Aeson                 as Aeson
-import qualified Data.Text                  as T
-import           GHC.TypeLits               (KnownNat)
-import           Haspara.Accounting.Account (AccountKind(..))
-import           Haspara.Quantity           (Quantity)
+import qualified Data.Aeson as Aeson
+import qualified Data.Text as T
+import GHC.TypeLits (KnownNat)
+import Haspara.Accounting.Account (AccountKind (..))
+import Haspara.Quantity (Quantity)
 
 
 -- | Data definition for encoding the debit/credit indicator.
@@ -26,6 +27,7 @@ data Side = SideDebit | SideCredit
 
 -- | 'Aeson.FromJSON' instance for 'Side'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.eitherDecode "\"db\"" :: Either String Side
 -- Right SideDebit
 -- >>> Aeson.eitherDecode "\"cr\"" :: Either String Side
@@ -36,7 +38,7 @@ instance Aeson.FromJSON Side where
   parseJSON = Aeson.withText "Side" $ \t -> case t of
     "db" -> pure SideDebit
     "cr" -> pure SideCredit
-    _    -> fail $ "Unkown side indicator: \"" <> T.unpack t <> "\". Expecting one of \"db\" or \"cr\""
+    _ -> fail $ "Unkown side indicator: \"" <> T.unpack t <> "\". Expecting one of \"db\" or \"cr\""
 
 
 -- | 'Aeson.ToJSON' instance for 'Side'.
@@ -50,7 +52,7 @@ instance Aeson.FromJSON Side where
 -- >>> Aeson.decode (Aeson.encode SideCredit) == Just SideCredit
 -- True
 instance Aeson.ToJSON Side where
-  toJSON SideDebit  = Aeson.String "db"
+  toJSON SideDebit = Aeson.String "db"
   toJSON SideCredit = Aeson.String "cr"
 
 
@@ -61,7 +63,7 @@ instance Aeson.ToJSON Side where
 -- >>> otherSide SideCredit
 -- SideDebit
 otherSide :: Side -> Side
-otherSide SideDebit  = SideCredit
+otherSide SideDebit = SideCredit
 otherSide SideCredit = SideDebit
 
 
@@ -112,16 +114,16 @@ sideByAccountKind
   -> Quantity precision
   -> Side
 sideByAccountKind k q = case (k, signum q >= 0) of
-  (AccountKindAsset, False)     -> SideCredit
-  (AccountKindAsset, True)      -> SideDebit
+  (AccountKindAsset, False) -> SideCredit
+  (AccountKindAsset, True) -> SideDebit
   (AccountKindLiability, False) -> SideDebit
-  (AccountKindLiability, True)  -> SideCredit
-  (AccountKindEquity, False)    -> SideDebit
-  (AccountKindEquity, True)     -> SideCredit
-  (AccountKindRevenue, False)   -> SideDebit
-  (AccountKindRevenue, True)    -> SideCredit
-  (AccountKindExpense, False)   -> SideCredit
-  (AccountKindExpense, True)    -> SideDebit
+  (AccountKindLiability, True) -> SideCredit
+  (AccountKindEquity, False) -> SideDebit
+  (AccountKindEquity, True) -> SideCredit
+  (AccountKindRevenue, False) -> SideDebit
+  (AccountKindRevenue, True) -> SideCredit
+  (AccountKindExpense, False) -> SideCredit
+  (AccountKindExpense, True) -> SideDebit
 
 
 -- | Returns the "normal" side for a given 'AccountKind'.
@@ -142,8 +144,8 @@ sideByAccountKind k q = case (k, signum q >= 0) of
 -- | Expense         | Debit          | Credit           |
 -- +-----------------+----------------+------------------+
 normalSideByAccountKind :: AccountKind -> Side
-normalSideByAccountKind AccountKindAsset     = SideDebit
+normalSideByAccountKind AccountKindAsset = SideDebit
 normalSideByAccountKind AccountKindLiability = SideCredit
-normalSideByAccountKind AccountKindEquity    = SideCredit
-normalSideByAccountKind AccountKindRevenue   = SideCredit
-normalSideByAccountKind AccountKindExpense   = SideDebit
+normalSideByAccountKind AccountKindEquity = SideCredit
+normalSideByAccountKind AccountKindRevenue = SideCredit
+normalSideByAccountKind AccountKindExpense = SideDebit

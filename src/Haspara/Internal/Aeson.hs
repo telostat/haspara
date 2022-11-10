@@ -1,11 +1,10 @@
 -- | This module provides helper definitions for "Data.Aeson".
-
 module Haspara.Internal.Aeson where
 
 import qualified Data.Aeson as Aeson
-import qualified Data.Char  as C
-import           Data.List  (stripPrefix)
-import           Data.Maybe (fromMaybe)
+import qualified Data.Char as C
+import Data.List (stripPrefix)
+import Data.Maybe (fromMaybe)
 
 
 -- | Common Aeson encoding/decoding options.
@@ -15,10 +14,11 @@ commonAesonOptions prefix =
     { Aeson.omitNothingFields = True
     , Aeson.fieldLabelModifier = \l -> Aeson.camelTo2 '_' . fromMaybe l $ stripPrefix prefix l
     , Aeson.constructorTagModifier = \l -> Aeson.camelTo2 '_' . fromMaybe l $ stripPrefix prefix l
-    , Aeson.sumEncoding = Aeson.TaggedObject
-        { Aeson.tagFieldName = "type"
-        , Aeson.contentsFieldName = "value"
-        }
+    , Aeson.sumEncoding =
+        Aeson.TaggedObject
+          { Aeson.tagFieldName = "type"
+          , Aeson.contentsFieldName = "value"
+          }
     }
 
 

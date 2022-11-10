@@ -1,25 +1,26 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 -- | This module provides definitions for amounts used as in accounting.
 --
 -- For balance definition that allows "Negative Balance" phenomenon, see
 -- 'Haspara.Accounting.Balance'.
-
-{-# LANGUAGE DataKinds #-}
-
 module Haspara.Accounting.Amount where
 
-import qualified Data.Aeson                 as Aeson
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Account (AccountKind(..))
-import           Haspara.Accounting.Side    (Side(..), sideByAccountKind)
-import           Haspara.Internal.Aeson     (commonAesonOptions)
-import           Haspara.Quantity           (Quantity, UnsignedQuantity, absQuantity)
-import           Refined                    (unrefine)
+import qualified Data.Aeson as Aeson
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Accounting.Account (AccountKind (..))
+import Haspara.Accounting.Side (Side (..), sideByAccountKind)
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity, UnsignedQuantity, absQuantity)
+import Refined (unrefine)
 
 
 -- | Data definition for amounts.
 data Amount (precision :: Nat) = Amount
-  { amountSide  :: !Side
+  { amountSide :: !Side
   , amountValue :: !(UnsignedQuantity precision)
   }
   deriving (Eq, Generic, Ord, Show)
@@ -27,6 +28,8 @@ data Amount (precision :: Nat) = Amount
 
 -- | 'Aeson.FromJSON' instance for 'Amount'.
 --
+-- >>> :set -XDataKinds
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.eitherDecode "{\"side\": \"db\", \"value\": 42}" :: Either String (Amount 2)
 -- Right (Amount {amountSide = SideDebit, amountValue = Refined 42.00})
 -- >>> Aeson.eitherDecode "{\"side\": \"cr\", \"value\": 42}" :: Either String (Amount 2)
@@ -37,6 +40,7 @@ instance KnownNat precision => Aeson.FromJSON (Amount precision) where
 
 -- | 'Aeson.ToJSON' instance for 'Amount'.
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Accounting.Side
 -- >>> import Haspara.Quantity
 -- >>> import Refined.Unsafe
@@ -55,13 +59,13 @@ instance KnownNat precision => Aeson.ToJSON (Amount precision) where
 -- | Returns the debit value of the 'Amount', if any.
 amountDebit :: KnownNat precision => Amount precision -> Maybe (UnsignedQuantity precision)
 amountDebit (Amount SideDebit value) = Just value
-amountDebit _                        = Nothing
+amountDebit _ = Nothing
 
 
 -- | Returns the credit value of the 'Amount', if any.
 amountCredit :: KnownNat precision => Amount precision -> Maybe (UnsignedQuantity precision)
 amountCredit (Amount SideCredit value) = Just value
-amountCredit _                         = Nothing
+amountCredit _ = Nothing
 
 
 -- | Builds the 'Amount' for the given /value/ for the given 'AccountKind'.
@@ -88,6 +92,7 @@ amountCredit _                         = Nothing
 --
 -- Conventionally, the latter is reflected as follow:
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Quantity
 -- >>> amountFromQuantity AccountKindLiability (mkQuantity 1000 :: Quantity 2)
 -- Amount {amountSide = SideCredit, amountValue = Refined 1000.00}
@@ -145,11 +150,11 @@ amountFromValue
   -> Quantity precision
   -> Amount precision
 amountFromValue k q = case k of
-  AccountKindAsset     -> Amount { amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q }
-  AccountKindLiability -> Amount { amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q }
-  AccountKindEquity    -> Amount { amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q }
-  AccountKindRevenue   -> Amount { amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q }
-  AccountKindExpense   -> Amount { amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q }
+  AccountKindAsset -> Amount {amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q}
+  AccountKindLiability -> Amount {amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q}
+  AccountKindEquity -> Amount {amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q}
+  AccountKindRevenue -> Amount {amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q}
+  AccountKindExpense -> Amount {amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q}
 
 
 -- | Returns the value for the given 'Amount' for the given 'AccountKind'.
@@ -159,6 +164,7 @@ amountFromValue k q = case k of
 -- For values of positive and negative net-effect on the net-worth of the
 -- entity, respectively:
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Quantity
 -- >>> let valPos = mkQuantity 42 :: Quantity 2
 -- >>> let valNeg = mkQuantity (-42) :: Quantity 2
@@ -184,16 +190,16 @@ valueFromAmount
   -> Amount precision
   -> Quantity precision
 valueFromAmount k (Amount s v) = case (k, s, unrefine v) of
-  (AccountKindAsset, SideDebit, q)      -> q
-  (AccountKindAsset, SideCredit, q)     -> -q
-  (AccountKindLiability, SideDebit, q)  -> q
+  (AccountKindAsset, SideDebit, q) -> q
+  (AccountKindAsset, SideCredit, q) -> -q
+  (AccountKindLiability, SideDebit, q) -> q
   (AccountKindLiability, SideCredit, q) -> -q
-  (AccountKindEquity, SideDebit, q)     -> -q
-  (AccountKindEquity, SideCredit, q)    -> q
-  (AccountKindRevenue, SideDebit, q)    -> -q
-  (AccountKindRevenue, SideCredit, q)   -> q
-  (AccountKindExpense, SideDebit, q)    -> -q
-  (AccountKindExpense, SideCredit, q)   -> q
+  (AccountKindEquity, SideDebit, q) -> -q
+  (AccountKindEquity, SideCredit, q) -> q
+  (AccountKindRevenue, SideDebit, q) -> -q
+  (AccountKindRevenue, SideCredit, q) -> q
+  (AccountKindExpense, SideDebit, q) -> -q
+  (AccountKindExpense, SideCredit, q) -> q
 
 
 -- | Builds the 'Amount' value for the given account kind and quantity.
@@ -204,6 +210,7 @@ valueFromAmount k (Amount s v) = case (k, s, unrefine v) of
 -- For example, a loan of USD 1,000 has an increase in our liabilities.
 -- Therefore, the quantity is expected to be positive:
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Quantity
 -- >>> amountFromQuantity AccountKindLiability (mkQuantity 1000 :: Quantity 2)
 -- Amount {amountSide = SideCredit, amountValue = Refined 1000.00}
@@ -239,17 +246,15 @@ quantityFromAmount
   -> Amount precision
   -> Quantity precision
 quantityFromAmount k (Amount side absValue) =
-  let
-    value = unrefine absValue
-  in
-    case (k, side) of
-      (AccountKindAsset, SideDebit)      -> value
-      (AccountKindAsset, SideCredit)     -> -value
-      (AccountKindLiability, SideDebit)  -> -value
-      (AccountKindLiability, SideCredit) -> value
-      (AccountKindEquity, SideDebit)     -> -value
-      (AccountKindEquity, SideCredit)    -> value
-      (AccountKindRevenue, SideDebit)    -> -value
-      (AccountKindRevenue, SideCredit)   -> value
-      (AccountKindExpense, SideDebit)    -> value
-      (AccountKindExpense, SideCredit)   -> -value
+  let value = unrefine absValue
+   in case (k, side) of
+        (AccountKindAsset, SideDebit) -> value
+        (AccountKindAsset, SideCredit) -> -value
+        (AccountKindLiability, SideDebit) -> -value
+        (AccountKindLiability, SideCredit) -> value
+        (AccountKindEquity, SideDebit) -> -value
+        (AccountKindEquity, SideCredit) -> value
+        (AccountKindRevenue, SideDebit) -> -value
+        (AccountKindRevenue, SideCredit) -> value
+        (AccountKindExpense, SideDebit) -> value
+        (AccountKindExpense, SideCredit) -> -value

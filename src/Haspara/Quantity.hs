@@ -1,28 +1,35 @@
--- | This module provides definitions for modeling and working with quantities
--- with fixed decimal points.
-
 {-# LANGUAGE DataKinds #-}
-
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ScopedTypeVariables  #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveLift #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
+-- | This module provides definitions for modeling and working with quantities
+-- with fixed decimal points.
 module Haspara.Quantity where
 
-import           Control.Applicative        (liftA2)
-import           Control.Monad.Except       (MonadError(throwError))
-import qualified Data.Aeson                 as Aeson
-import           Data.Either                (fromRight)
-import           Data.Proxy                 (Proxy(..))
-import           Data.Scientific            (FPFormat(Fixed), Scientific, formatScientific)
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat, natVal, type (+))
+import Control.Applicative (liftA2)
+import Control.Monad.Except (MonadError (throwError))
+import qualified Data.Aeson as Aeson
+import Data.Either (fromRight)
+import Data.Proxy (Proxy (..))
+import Data.Scientific (FPFormat (Fixed), Scientific, formatScientific)
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat, natVal, type (+))
 import qualified Language.Haskell.TH.Syntax as TH
-import qualified Numeric.Decimal            as D
-import           Refined                    (NonNegative, Refined, unrefine)
-import           Refined.Unsafe             (unsafeRefine)
+import qualified Numeric.Decimal as D
+import Refined (NonNegative, Refined, unrefine)
+import Refined.Unsafe (unsafeRefine)
 
 
 -- * Data Definition
--- $dataDefinition
 
 
 -- | Type encoding for quantity values with a given scaling (digits after the
@@ -56,7 +63,7 @@ import           Refined.Unsafe             (unsafeRefine)
 -- Right 0.42
 -- >>> mkQuantityLossless 0.415 :: Either String (Quantity 2)
 -- Left "Underflow while trying to create quantity: 0.415"
-newtype Quantity (s :: Nat) = MkQuantity { unQuantity :: D.Decimal D.RoundHalfEven s Integer }
+newtype Quantity (s :: Nat) = MkQuantity {unQuantity :: D.Decimal D.RoundHalfEven s Integer}
   deriving (Eq, Ord, Generic, Num)
 
 
@@ -76,6 +83,7 @@ deriving instance TH.Lift (Quantity s)
 
 -- | 'Aeson.FromJSON' instance for 'Quantity'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.decode "0.42" :: Maybe (Quantity 2)
 -- Just 0.42
 -- >>> Aeson.decode "0.415" :: Maybe (Quantity 2)
@@ -159,7 +167,6 @@ instance KnownNat s => Show (Quantity s) where
 
 
 -- * Smart Constructors
--- $smartConstructors
 
 
 -- | Constructs 'Quantity' values from 'Scientific' values in a lossy way.
@@ -214,7 +221,7 @@ instance KnownNat s => Show (Quantity s) where
 -- 0.160
 mkQuantity :: KnownNat s => Scientific -> Quantity s
 mkQuantity s = case mkQuantityLossless s of
-  Left _   -> mkQuantityAux s
+  Left _ -> mkQuantityAux s
   Right dv -> dv
 
 
@@ -267,7 +274,6 @@ mkQuantityLossless s = either (const $ throwError ("Underflow while trying to cr
 
 
 -- * Utilities
--- $utilities
 
 
 -- | Rounds given quantity by @k@ digits.
@@ -323,7 +329,6 @@ absQuantity = unsafeRefine . abs
 
 
 -- * Internal
--- $internal
 
 
 -- | Auxiliary function for constructing 'Quantity' values.
