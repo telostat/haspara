@@ -18,7 +18,7 @@ rudimentary (and experimental) accounting functionality.
 Before committing code to repository, reformat the code:
 
 ```sh
-stylish-haskell -i -r src/
+fourmolu -i src/ test/
 ```
 
 Compile the codebase, check warnings and errors:

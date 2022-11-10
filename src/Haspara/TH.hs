@@ -1,14 +1,13 @@
 -- | This module provides template-haskell functions for various "Haspara"
 -- definitions.
-
 module Haspara.TH where
 
-import           Data.Function              (fix)
-import           Data.Scientific            (Scientific)
-import qualified Data.Text                  as T
-import           GHC.TypeLits               (KnownNat)
-import           Haspara.Currency           (Currency, CurrencyPair(CurrencyPair), mkCurrencyError)
-import           Haspara.Quantity           (Quantity, mkQuantityLossless)
+import Data.Function (fix)
+import Data.Scientific (Scientific)
+import qualified Data.Text as T
+import GHC.TypeLits (KnownNat)
+import Haspara.Currency (Currency, CurrencyPair (CurrencyPair), mkCurrencyError)
+import Haspara.Quantity (Quantity, mkQuantityLossless)
 import qualified Language.Haskell.TH.Syntax as TH
 
 

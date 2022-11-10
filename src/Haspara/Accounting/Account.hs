@@ -1,20 +1,18 @@
--- | This module provides definitions for acccounts and types of accounts as
--- they are used in accounting reporting.
-
-{-# LANGUAGE DataKinds   #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
 
+-- | This module provides definitions for acccounts and types of accounts as
+-- they are used in accounting reporting.
 module Haspara.Accounting.Account where
 
-import qualified Data.Aeson             as Aeson
-import           Data.Hashable          (Hashable)
-import qualified Data.Text              as T
-import           GHC.Generics           (Generic)
-import           Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOptions)
+import qualified Data.Aeson as Aeson
+import Data.Hashable (Hashable)
+import qualified Data.Text as T
+import GHC.Generics (Generic)
+import Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOptions)
 
 
 -- * Account Kind
--- $accountKind
 
 
 -- | Type encoding for ledger account type.
@@ -51,8 +49,8 @@ import           Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOp
 -- "\"REVENUE\""
 -- >>> Data.Aeson.encode AccountKindExpense
 -- "\"EXPENSE\""
-data AccountKind =
-    AccountKindAsset
+data AccountKind
+  = AccountKindAsset
   | AccountKindLiability
   | AccountKindEquity
   | AccountKindRevenue
@@ -84,15 +82,14 @@ instance Aeson.ToJSON AccountKind where
 -- >>> accountKindText AccountKindExpense
 -- "Expense"
 accountKindText :: AccountKind -> T.Text
-accountKindText AccountKindAsset     = "Asset"
+accountKindText AccountKindAsset = "Asset"
 accountKindText AccountKindLiability = "Liability"
-accountKindText AccountKindEquity    = "Equity"
-accountKindText AccountKindRevenue   = "Revenue"
-accountKindText AccountKindExpense   = "Expense"
+accountKindText AccountKindEquity = "Equity"
+accountKindText AccountKindRevenue = "Revenue"
+accountKindText AccountKindExpense = "Expense"
 
 
 -- * Account
--- $account
 
 
 -- | Type encoding for account values.
@@ -110,7 +107,7 @@ accountKindText AccountKindExpense   = "Expense"
 -- >>> Data.Aeson.decode (Data.Aeson.encode acc) == Just acc
 -- True
 data Account o = Account
-  { accountKind   :: !AccountKind
+  { accountKind :: !AccountKind
   , accountObject :: !o
   }
   deriving (Eq, Generic, Ord, Show)

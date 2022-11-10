@@ -1,28 +1,26 @@
--- | This module provides definitions for modeling and working with foreign
--- exchange (FX) rate quotations.
-
-{-# LANGUAGE DataKinds   #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
 
+-- | This module provides definitions for modeling and working with foreign
+-- exchange (FX) rate quotations.
 module Haspara.FxQuote where
 
-import           Control.Monad.Except   (MonadError(throwError))
-import qualified Data.Aeson             as Aeson
-import           Data.Foldable          (foldl')
-import qualified Data.Map.Strict        as SM
-import           Data.Scientific        (Scientific)
-import qualified Data.Text              as T
-import           Data.Time              (Day, addDays)
-import           GHC.Generics           (Generic)
-import           GHC.TypeLits           (KnownNat, Nat)
-import           Haspara.Currency       (Currency, CurrencyPair(CurrencyPair))
-import           Haspara.Internal.Aeson (commonAesonOptions)
-import           Haspara.Quantity       (Quantity(..), mkQuantity)
-import           Refined                (Positive, Refined, refineError)
+import Control.Monad.Except (MonadError (throwError))
+import qualified Data.Aeson as Aeson
+import Data.Foldable (foldl')
+import qualified Data.Map.Strict as SM
+import Data.Scientific (Scientific)
+import qualified Data.Text as T
+import Data.Time (Day, addDays)
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Currency (Currency, CurrencyPair (CurrencyPair))
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity (..), mkQuantity)
+import Refined (Positive, Refined, refineError)
 
 
 -- * FX Rate Quotation
--- $fxRateQuotation
 
 
 -- | Type encoding for FX rate quotations with fixed precision.
@@ -33,9 +31,12 @@ import           Refined                (Positive, Refined, refineError)
 -- 2. a date that the quotation is effective as of,
 -- 3. a (positive) rate as the value of the quotation.
 data FxQuote (s :: Nat) = MkFxQuote
-  { fxQuotePair :: !CurrencyPair  -- ^ Currency pair of the FX rate.
-  , fxQuoteDate :: !Day  -- ^ Actual date of the FX rate.
-  , fxQuoteRate :: !(Refined Positive (Quantity s))  -- ^ (Positive) rate value of the FX rate.
+  { fxQuotePair :: !CurrencyPair
+  -- ^ Currency pair of the FX rate.
+  , fxQuoteDate :: !Day
+  -- ^ Actual date of the FX rate.
+  , fxQuoteRate :: !(Refined Positive (Quantity s))
+  -- ^ (Positive) rate value of the FX rate.
   }
   deriving (Eq, Generic, Ord, Show)
 
@@ -61,10 +62,14 @@ instance KnownNat s => Aeson.ToJSON (FxQuote s) where
 mkFxQuoteError
   :: MonadError T.Text m
   => KnownNat s
-  => Currency    -- ^ Base currency (from) of the FX quotation.
-  -> Currency    -- ^ Quote currency (to) of the FX quotation.
-  -> Day         -- ^ Date of the FX quotation.
-  -> Scientific  -- ^ FX quotation rate, expected to be positive.
+  => Currency
+  -- ^ Base currency (from) of the FX quotation.
+  -> Currency
+  -- ^ Quote currency (to) of the FX quotation.
+  -> Day
+  -- ^ Date of the FX quotation.
+  -> Scientific
+  -- ^ FX quotation rate, expected to be positive.
   -> m (FxQuote s)
 mkFxQuoteError ccy1 ccy2 date rate =
   either (throwError . (<>) "Can not create FX Rate. Error was: ") pure $ do
@@ -83,10 +88,14 @@ mkFxQuoteError ccy1 ccy2 date rate =
 mkFxQuoteFail
   :: MonadFail m
   => KnownNat s
-  => Currency    -- ^ Base currency (from) of the FX quotation.
-  -> Currency    -- ^ Quote currency (to) of the FX quotation.
-  -> Day         -- ^ Date of the FX quotation.
-  -> Scientific  -- ^ FX quotation rate, expected to be positive.
+  => Currency
+  -- ^ Base currency (from) of the FX quotation.
+  -> Currency
+  -- ^ Quote currency (to) of the FX quotation.
+  -> Day
+  -- ^ Date of the FX quotation.
+  -> Scientific
+  -- ^ FX quotation rate, expected to be positive.
   -> m (FxQuote s)
 mkFxQuoteFail ccy1 ccy2 date =
   either (fail . T.unpack) pure . mkFxQuoteError ccy1 ccy2 date
@@ -102,16 +111,22 @@ mkFxQuoteFail ccy1 ccy2 date =
 -- ...
 mkFxQuoteUnsafe
   :: KnownNat s
-  => Currency    -- ^ Base currency (from) of the FX quotation.
-  -> Currency    -- ^ Quote currency (to) of the FX quotation.
-  -> Day         -- ^ Date of the FX quotation.
-  -> Scientific  -- ^ FX quotation rate, expected to be positive.
+  => Currency
+  -- ^ Base currency (from) of the FX quotation.
+  -> Currency
+  -- ^ Quote currency (to) of the FX quotation.
+  -> Day
+  -- ^ Date of the FX quotation.
+  -> Scientific
+  -- ^ FX quotation rate, expected to be positive.
   -> FxQuote s
 mkFxQuoteUnsafe ccy1 ccy2 date =
   either (error . T.unpack) id . mkFxQuoteError ccy1 ccy2 date
 
 
 -- * FX Rate Quotation Database
+
+
 -- $fxRateQuotationDatabase
 --
 -- >>> let database = addFxQuotes [mkFxQuoteUnsafe @8 "EUR" "USD" (read "2021-12-31") 1.13, mkFxQuoteUnsafe @8 "EUR" "TRY" (read "2021-12-31") 15.14] emptyFxQuoteDatabase
@@ -132,21 +147,24 @@ type FxQuoteDatabase (n :: Nat) = SM.Map CurrencyPair (FxQuotePairDatabase n)
 
 -- | Type encoding for FX rate quotation database for a 'CurrencyPair'.
 data FxQuotePairDatabase (n :: Nat) = FxQuotePairDatabase
-  { fxQuotePairDatabasePair  :: !CurrencyPair
+  { fxQuotePairDatabasePair :: !CurrencyPair
   , fxQuotePairDatabaseTable :: !(SM.Map Day (FxQuote n))
   , fxQuotePairDatabaseSince :: !Day
   , fxQuotePairDatabaseUntil :: !Day
   }
-  deriving Show
+  deriving (Show)
 
 
 -- | Attempts to find and return the FX quotation for a given 'CurrencyPair' as
 -- of a give 'Day' in a given 'FxQuoteDatabase'.
 findFxQuote
   :: KnownNat n
-  => FxQuoteDatabase n  -- ^ FX quotation database to perform the lookup on.
-  -> CurrencyPair       -- ^ Currency pair we are looking for the quotation for.
-  -> Day                -- ^ Date the quotation we look for is valid as of.
+  => FxQuoteDatabase n
+  -- ^ FX quotation database to perform the lookup on.
+  -> CurrencyPair
+  -- ^ Currency pair we are looking for the quotation for.
+  -> Day
+  -- ^ Date the quotation we look for is valid as of.
   -> Maybe (FxQuote n)
 findFxQuote db pair date = SM.lookup pair db >>= findFxQuoteAux date
 
@@ -195,12 +213,11 @@ addFxQuote
   -> FxQuoteDatabase n
   -> FxQuoteDatabase n
 addFxQuote quote@(MkFxQuote pair _ _) database = case SM.lookup pair database of
-  Nothing  -> SM.insert pair (initFxQuotePairDatabase quote) database
+  Nothing -> SM.insert pair (initFxQuotePairDatabase quote) database
   Just fpd -> SM.insert pair (updateFxQuotePairDatabase quote fpd) database
 
 
 -- * Internal
--- $internal
 
 
 -- | Initializes FX quote pair database with the given FX quote.
@@ -210,7 +227,7 @@ initFxQuotePairDatabase
   -> FxQuotePairDatabase n
 initFxQuotePairDatabase quote@(MkFxQuote pair date _) =
   FxQuotePairDatabase
-    { fxQuotePairDatabasePair  = pair
+    { fxQuotePairDatabasePair = pair
     , fxQuotePairDatabaseTable = SM.singleton date quote
     , fxQuotePairDatabaseSince = date
     , fxQuotePairDatabaseUntil = date

@@ -1,18 +1,17 @@
--- | This module provides definitions for balances used as in accounting.
-
 {-# LANGUAGE DataKinds #-}
 
+-- | This module provides definitions for balances used as in accounting.
 module Haspara.Accounting.Balance where
 
-import qualified Data.Aeson                 as Aeson
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Account (AccountKind)
-import           Haspara.Accounting.Amount  (Amount(Amount), quantityFromAmount, valueFromAmount)
-import           Haspara.Accounting.Side    (Side(..), otherSide)
-import           Haspara.Internal.Aeson     (commonAesonOptions)
-import           Haspara.Quantity           (Quantity, absQuantity)
-import           Refined                    (unrefine)
+import qualified Data.Aeson as Aeson
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Accounting.Account (AccountKind)
+import Haspara.Accounting.Amount (Amount (Amount), quantityFromAmount, valueFromAmount)
+import Haspara.Accounting.Side (Side (..), otherSide)
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity, absQuantity)
+import Refined (unrefine)
 
 
 -- | Data definition for balances.
@@ -22,7 +21,7 @@ import           Refined                    (unrefine)
 --
 -- See https://www.accountingtools.com/articles/what-is-a-negative-balance.html
 data Balance (precision :: Nat) = Balance
-  { balanceSide  :: !Side
+  { balanceSide :: !Side
   , balanceValue :: !(Quantity precision)
   }
   deriving (Eq, Generic, Show)
@@ -82,7 +81,7 @@ balanceDebit
   => Balance precision
   -> Maybe (Quantity precision)
 balanceDebit (Balance SideDebit v) = Just v
-balanceDebit _                     = Nothing
+balanceDebit _ = Nothing
 
 
 -- | Returns the credit quantity, if any.
@@ -91,7 +90,7 @@ balanceCredit
   => Balance precision
   -> Maybe (Quantity precision)
 balanceCredit (Balance SideCredit v) = Just v
-balanceCredit _                      = Nothing
+balanceCredit _ = Nothing
 
 
 -- | Updates the balance with the given amount.

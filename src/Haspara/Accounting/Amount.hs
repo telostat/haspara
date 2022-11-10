@@ -1,25 +1,24 @@
+{-# LANGUAGE DataKinds #-}
+
 -- | This module provides definitions for amounts used as in accounting.
 --
 -- For balance definition that allows "Negative Balance" phenomenon, see
 -- 'Haspara.Accounting.Balance'.
-
-{-# LANGUAGE DataKinds #-}
-
 module Haspara.Accounting.Amount where
 
-import qualified Data.Aeson                 as Aeson
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Account (AccountKind(..))
-import           Haspara.Accounting.Side    (Side(..), sideByAccountKind)
-import           Haspara.Internal.Aeson     (commonAesonOptions)
-import           Haspara.Quantity           (Quantity, UnsignedQuantity, absQuantity)
-import           Refined                    (unrefine)
+import qualified Data.Aeson as Aeson
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Accounting.Account (AccountKind (..))
+import Haspara.Accounting.Side (Side (..), sideByAccountKind)
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity, UnsignedQuantity, absQuantity)
+import Refined (unrefine)
 
 
 -- | Data definition for amounts.
 data Amount (precision :: Nat) = Amount
-  { amountSide  :: !Side
+  { amountSide :: !Side
   , amountValue :: !(UnsignedQuantity precision)
   }
   deriving (Eq, Generic, Ord, Show)
@@ -55,13 +54,13 @@ instance KnownNat precision => Aeson.ToJSON (Amount precision) where
 -- | Returns the debit value of the 'Amount', if any.
 amountDebit :: KnownNat precision => Amount precision -> Maybe (UnsignedQuantity precision)
 amountDebit (Amount SideDebit value) = Just value
-amountDebit _                        = Nothing
+amountDebit _ = Nothing
 
 
 -- | Returns the credit value of the 'Amount', if any.
 amountCredit :: KnownNat precision => Amount precision -> Maybe (UnsignedQuantity precision)
 amountCredit (Amount SideCredit value) = Just value
-amountCredit _                         = Nothing
+amountCredit _ = Nothing
 
 
 -- | Builds the 'Amount' for the given /value/ for the given 'AccountKind'.
@@ -145,11 +144,11 @@ amountFromValue
   -> Quantity precision
   -> Amount precision
 amountFromValue k q = case k of
-  AccountKindAsset     -> Amount { amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q }
-  AccountKindLiability -> Amount { amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q }
-  AccountKindEquity    -> Amount { amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q }
-  AccountKindRevenue   -> Amount { amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q }
-  AccountKindExpense   -> Amount { amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q }
+  AccountKindAsset -> Amount {amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q}
+  AccountKindLiability -> Amount {amountSide = if q >= 0 then SideDebit else SideCredit, amountValue = absQuantity q}
+  AccountKindEquity -> Amount {amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q}
+  AccountKindRevenue -> Amount {amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q}
+  AccountKindExpense -> Amount {amountSide = if q >= 0 then SideCredit else SideDebit, amountValue = absQuantity q}
 
 
 -- | Returns the value for the given 'Amount' for the given 'AccountKind'.
@@ -184,16 +183,16 @@ valueFromAmount
   -> Amount precision
   -> Quantity precision
 valueFromAmount k (Amount s v) = case (k, s, unrefine v) of
-  (AccountKindAsset, SideDebit, q)      -> q
-  (AccountKindAsset, SideCredit, q)     -> -q
-  (AccountKindLiability, SideDebit, q)  -> q
+  (AccountKindAsset, SideDebit, q) -> q
+  (AccountKindAsset, SideCredit, q) -> -q
+  (AccountKindLiability, SideDebit, q) -> q
   (AccountKindLiability, SideCredit, q) -> -q
-  (AccountKindEquity, SideDebit, q)     -> -q
-  (AccountKindEquity, SideCredit, q)    -> q
-  (AccountKindRevenue, SideDebit, q)    -> -q
-  (AccountKindRevenue, SideCredit, q)   -> q
-  (AccountKindExpense, SideDebit, q)    -> -q
-  (AccountKindExpense, SideCredit, q)   -> q
+  (AccountKindEquity, SideDebit, q) -> -q
+  (AccountKindEquity, SideCredit, q) -> q
+  (AccountKindRevenue, SideDebit, q) -> -q
+  (AccountKindRevenue, SideCredit, q) -> q
+  (AccountKindExpense, SideDebit, q) -> -q
+  (AccountKindExpense, SideCredit, q) -> q
 
 
 -- | Builds the 'Amount' value for the given account kind and quantity.
@@ -239,17 +238,15 @@ quantityFromAmount
   -> Amount precision
   -> Quantity precision
 quantityFromAmount k (Amount side absValue) =
-  let
-    value = unrefine absValue
-  in
-    case (k, side) of
-      (AccountKindAsset, SideDebit)      -> value
-      (AccountKindAsset, SideCredit)     -> -value
-      (AccountKindLiability, SideDebit)  -> -value
-      (AccountKindLiability, SideCredit) -> value
-      (AccountKindEquity, SideDebit)     -> -value
-      (AccountKindEquity, SideCredit)    -> value
-      (AccountKindRevenue, SideDebit)    -> -value
-      (AccountKindRevenue, SideCredit)   -> value
-      (AccountKindExpense, SideDebit)    -> value
-      (AccountKindExpense, SideCredit)   -> -value
+  let value = unrefine absValue
+   in case (k, side) of
+        (AccountKindAsset, SideDebit) -> value
+        (AccountKindAsset, SideCredit) -> -value
+        (AccountKindLiability, SideDebit) -> -value
+        (AccountKindLiability, SideCredit) -> value
+        (AccountKindEquity, SideDebit) -> -value
+        (AccountKindEquity, SideCredit) -> value
+        (AccountKindRevenue, SideDebit) -> -value
+        (AccountKindRevenue, SideCredit) -> value
+        (AccountKindExpense, SideDebit) -> value
+        (AccountKindExpense, SideCredit) -> -value

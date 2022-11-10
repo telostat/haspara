@@ -56,7 +56,6 @@ library:
   - GADTSyntax
   - GeneralisedNewtypeDeriving
   - HexFloatLiterals
-  - ImportQualifiedPost
   - InstanceSigs
   - KindSignatures
   - MultiParamTypeClasses

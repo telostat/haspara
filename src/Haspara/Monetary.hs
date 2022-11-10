@@ -1,24 +1,23 @@
--- | This module provides definitions for modeling and working with monetary
--- values.
-
-{-# LANGUAGE DataKinds   #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingVia #-}
 
+-- | This module provides definitions for modeling and working with monetary
+-- values.
 module Haspara.Monetary where
 
-import           Control.Exception      (Exception)
-import           Control.Monad          (when)
-import           Control.Monad.Catch    (MonadThrow(throwM))
-import qualified Data.Aeson             as Aeson
-import           Data.Time              (Day)
-import           GHC.Generics           (Generic)
-import           GHC.Stack              (HasCallStack)
-import           GHC.TypeLits           (KnownNat, Nat)
-import           Haspara.Currency       (Currency, CurrencyPair(..))
-import           Haspara.FxQuote        (FxQuote(..))
-import           Haspara.Internal.Aeson (commonAesonOptions)
-import           Haspara.Quantity       (Quantity, times)
-import           Refined                (unrefine)
+import Control.Exception (Exception)
+import Control.Monad (when)
+import Control.Monad.Catch (MonadThrow (throwM))
+import qualified Data.Aeson as Aeson
+import Data.Time (Day)
+import GHC.Generics (Generic)
+import GHC.Stack (HasCallStack)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Currency (Currency, CurrencyPair (..))
+import Haspara.FxQuote (FxQuote (..))
+import Haspara.Internal.Aeson (commonAesonOptions)
+import Haspara.Quantity (Quantity, times)
+import Refined (unrefine)
 
 
 -- | Type encoding for dated monetary values.
@@ -29,7 +28,7 @@ import           Refined                (unrefine)
 -- 2. the currency of the monetary value, and
 -- 3. the quantity of the monetary value.
 data Money (s :: Nat) = Money
-  { moneyDate     :: !Day
+  { moneyDate :: !Day
   , moneyCurrency :: !Currency
   , moneyQuantity :: !(Quantity s)
   }
@@ -56,6 +55,7 @@ class MonadThrow m => Monetary m where
     => Currency
     -> Money s
     -> m (Money s)
+
 
   -- | Converts the given monetary value in one currency to another currency as
   -- of the given date.
@@ -106,21 +106,25 @@ data MonetaryException where
   -- | Indicates that we received a currency other than the expected currency.
   IncompatibleCurrenciesException
     :: HasCallStack
-    => Currency  -- ^ Expected currency
-    -> Currency  -- ^ Received currency
+    => Currency
+    -- ^ Expected currency
+    -> Currency
+    -- ^ Received currency
     -> MonetaryException
-
   -- | Indicates that we received a currency other than the expected currency.
   IncompatibleDatesException
     :: HasCallStack
-    => Day  -- ^ Date on and onwards of interest
-    -> Day  -- ^ Date received
+    => Day
+    -- ^ Date on and onwards of interest
+    -> Day
+    -- ^ Date received
     -> MonetaryException
-
   -- | Indicates that we received a currency other than the expected currency.
   InconsistentFxQuoteException
-    :: forall (s :: Nat). (HasCallStack, KnownNat s)
-    => FxQuote s  -- ^ FX rate quotation that is interpreted as inconsistent.
+    :: forall (s :: Nat)
+     . (HasCallStack, KnownNat s)
+    => FxQuote s
+    -- ^ FX rate quotation that is interpreted as inconsistent.
     -> MonetaryException
 
 

@@ -1,17 +1,16 @@
--- | This module provides data definitions and functions for trial balances.
-
 {-# LANGUAGE DataKinds #-}
 
+-- | This module provides data definitions and functions for trial balances.
 module Haspara.Accounting.TrialBalance where
 
-import qualified Data.Aeson                 as Aeson
-import           GHC.Generics               (Generic)
-import           GHC.TypeLits               (KnownNat, Nat)
-import           Haspara.Accounting.Amount  (Amount)
-import           Haspara.Accounting.Balance (Balance(Balance, balanceSide), amountFromBalance, updateBalance)
-import           Haspara.Accounting.Ledger  (GeneralLedger(generalLedgerLedgers), Ledger, ledgerClosing)
-import           Haspara.Accounting.Side    (Side(..))
-import           Haspara.Internal.Aeson     (commonAesonOptions)
+import qualified Data.Aeson as Aeson
+import GHC.Generics (Generic)
+import GHC.TypeLits (KnownNat, Nat)
+import Haspara.Accounting.Amount (Amount)
+import Haspara.Accounting.Balance (Balance (Balance, balanceSide), amountFromBalance, updateBalance)
+import Haspara.Accounting.Ledger (GeneralLedger (generalLedgerLedgers), Ledger, ledgerClosing)
+import Haspara.Accounting.Side (Side (..))
+import Haspara.Internal.Aeson (commonAesonOptions)
 
 
 -- | Data definition for a trial balance.
@@ -31,7 +30,7 @@ instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson
 
 -- | Data definition for a trial balance item.
 data TrialBalanceItem (precision :: Nat) account event = TrialBalanceItem
-  { trialBalanceItemLedger  :: !(Ledger precision account event)
+  { trialBalanceItemLedger :: !(Ledger precision account event)
   , trialBalanceItemBalance :: !(Balance precision)
   }
   deriving (Eq, Generic, Show)
@@ -78,10 +77,8 @@ trialBalanceTotals
   => TrialBalance precision account event
   -> (Balance precision, Balance precision)
 trialBalanceTotals (TrialBalance items) =
-  let
-    itemsFromDb = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideDebit . balanceSide . trialBalanceItemBalance) items
-    itemsFromCr = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideCredit . balanceSide . trialBalanceItemBalance) items
-    totalDb = foldl updateBalance (Balance SideDebit 0) itemsFromDb
-    totalCr = foldl updateBalance (Balance SideCredit 0) itemsFromCr
-  in
-    (totalDb, totalCr)
+  let itemsFromDb = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideDebit . balanceSide . trialBalanceItemBalance) items
+      itemsFromCr = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideCredit . balanceSide . trialBalanceItemBalance) items
+      totalDb = foldl updateBalance (Balance SideDebit 0) itemsFromDb
+      totalCr = foldl updateBalance (Balance SideCredit 0) itemsFromCr
+   in (totalDb, totalCr)
