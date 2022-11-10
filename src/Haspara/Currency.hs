@@ -29,6 +29,7 @@ import qualified Text.Megaparsec as MP
 -- 'Currency' values can be constructed via 'mkCurrencyError' that works in
 -- @'MonadError' 'T.Text'@ context:
 --
+-- >>> :set -XOverloadedStrings
 -- >>> mkCurrencyError "EUR" :: Either T.Text Currency
 -- Right EUR
 --
@@ -47,6 +48,7 @@ newtype Currency = MkCurrency {currencyCode :: T.Text}
 
 -- | 'IsString' instance for 'Currency'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> "USD" :: Currency
 -- USD
 instance IsString Currency where
@@ -55,6 +57,7 @@ instance IsString Currency where
 
 -- | 'Show' instance for 'Currency'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> "USD" :: Currency
 -- USD
 instance Show Currency where
@@ -63,6 +66,7 @@ instance Show Currency where
 
 -- | 'Aeson.FromJSON' instance for 'Currency'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.eitherDecode "\"\"" :: Either String Currency
 -- Left "Error in $: Currency code error! Expecting at least 3 uppercase ASCII letters, but received: "
 -- >>> Aeson.eitherDecode "\"A\"" :: Either String Currency
@@ -79,6 +83,7 @@ instance Aeson.FromJSON Currency where
 
 -- | 'Aeson.ToJSON' instance for 'Currency'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.encode ("USD" :: Currency)
 -- "\"USD\""
 instance Aeson.ToJSON Currency where
@@ -87,6 +92,7 @@ instance Aeson.ToJSON Currency where
 
 -- | Smart constructor for 'Currency' values within 'MonadError' context.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> mkCurrencyError "" :: Either T.Text Currency
 -- Left "Currency code error! Expecting at least 3 uppercase ASCII letters, but received: "
 -- >>> mkCurrencyError " " :: Either T.Text Currency
@@ -107,6 +113,7 @@ mkCurrencyError x =
 
 -- | Smart constructor for 'Currency' values within 'MonadFail' context.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> mkCurrencyFail "" :: Maybe Currency
 -- Nothing
 -- >>> mkCurrencyFail "US" :: Maybe Currency
@@ -121,6 +128,7 @@ mkCurrencyFail = either (fail . T.unpack) pure . mkCurrencyError
 
 -- | Parser that parses currency codes.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> MP.runParser currencyCodeParser "Example" ""
 -- Left (ParseErrorBundle {bundleErrors = TrivialError 0 (Just EndOfInput) (fromList []) :| [], bundlePosState = PosState {pstateInput = "", pstateOffset = 0, pstateSourcePos = SourcePos {sourceName = "Example", sourceLine = Pos 1, sourceColumn = Pos 1}, pstateTabWidth = Pos 8, pstateLinePrefix = ""}})
 -- >>> MP.runParser currencyCodeParser "Example" " "
@@ -153,6 +161,7 @@ currencyCodeParser = do
 --
 -- 'CurrencyPair' values are constructed via the data constructor:
 --
+-- >>> :set -XOverloadedStrings
 -- >>> CurrencyPair "EUR" "USD"
 -- EUR/USD
 --
@@ -181,6 +190,7 @@ instance Aeson.ToJSON CurrencyPair where
 
 -- | 'Show' instance for 'CurrencyPair'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> CurrencyPair "EUR" "USD"
 -- EUR/USD
 instance Show CurrencyPair where
@@ -189,6 +199,7 @@ instance Show CurrencyPair where
 
 -- | Converts a 'CurrencyPair' to a 2-tuple of 'Currency' values.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> toCurrencyTuple (CurrencyPair "EUR" "USD")
 -- (EUR,USD)
 toCurrencyTuple :: CurrencyPair -> (Currency, Currency)
@@ -197,6 +208,7 @@ toCurrencyTuple (CurrencyPair x y) = (x, y)
 
 -- | Converts a 2-tuple of 'Currency' values to a 'CurrencyPair'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> fromCurrencyTuple ("EUR", "USD")
 -- EUR/USD
 fromCurrencyTuple :: (Currency, Currency) -> CurrencyPair

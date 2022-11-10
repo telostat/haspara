@@ -30,6 +30,7 @@ import Haspara.Internal.Aeson (aesonOptionsForSingleTag, commonAesonOptions)
 --
 -- 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances, too:
 --
+-- >>> :set -XTypeApplications
 -- >>> Data.Aeson.decode @AccountKind "\"ASSET\""
 -- Just AccountKindAsset
 -- >>> Data.Aeson.decode @AccountKind "\"LIABILITY\""
@@ -100,6 +101,7 @@ accountKindText AccountKindExpense = "Expense"
 -- use-site to use its own account identity and accompanying information when
 -- required.
 --
+-- >>> :set -XTypeApplications
 -- >>> let acc = Account AccountKindAsset (1 ::Int)
 -- >>> Data.Aeson.encode acc
 -- "{\"kind\":\"ASSET\",\"object\":1}"

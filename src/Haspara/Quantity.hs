@@ -83,6 +83,7 @@ deriving instance TH.Lift (Quantity s)
 
 -- | 'Aeson.FromJSON' instance for 'Quantity'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.decode "0.42" :: Maybe (Quantity 2)
 -- Just 0.42
 -- >>> Aeson.decode "0.415" :: Maybe (Quantity 2)

@@ -58,6 +58,7 @@ instance KnownNat s => Aeson.ToJSON (FxQuote s) where
 -- The rate is expected to be a positive value. If it is not, the function will
 -- throw an error.
 --
+-- >>> :set -XTypeApplications
 -- >>> mkFxQuoteError @(Either _) @2 "EUR" "USD" (read "2021-12-31") 1.16
 -- Right (MkFxQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16})
 -- >>> mkFxQuoteError @(Either _) @2 "EUR" "USD" (read "2021-12-31") (-1.16)
@@ -84,6 +85,8 @@ mkFxQuoteError ccy1 ccy2 date rate =
 --
 -- The rate is expected to be a positive value. If it is not, the function will
 -- fail.
+--
+-- >>> :set -XTypeApplications
 -- >>> mkFxQuoteFail @Maybe @2 "EUR" "USD" (read "2021-12-31") 1.16
 -- Just (MkFxQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16})
 -- >>> mkFxQuoteFail @Maybe @2 "EUR" "USD" (read "2021-12-31") (-1.16)
@@ -106,6 +109,7 @@ mkFxQuoteFail ccy1 ccy2 date =
 
 -- | Unsafe 'FxQuote' constructor that 'error's if it fails.
 --
+-- >>> :set -XTypeApplications
 -- >>> mkFxQuoteUnsafe @2 "EUR" "USD" (read "2021-12-31") 1.16
 -- MkFxQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.16}
 -- >>> mkFxQuoteUnsafe @2 "EUR" "USD" (read "2021-12-31") (-1.16)
@@ -132,6 +136,7 @@ mkFxQuoteUnsafe ccy1 ccy2 date =
 
 -- $fxRateQuotationDatabase
 --
+-- >>> :set -XTypeApplications
 -- >>> let database = addFxQuotes [mkFxQuoteUnsafe @8 "EUR" "USD" (read "2021-12-31") 1.13, mkFxQuoteUnsafe @8 "EUR" "TRY" (read "2021-12-31") 15.14] emptyFxQuoteDatabase
 -- >>> findFxQuote database (CurrencyPair "EUR" "USD") (read "2021-12-31")
 -- Just (MkFxQuote {fxQuotePair = EUR/USD, fxQuoteDate = 2021-12-31, fxQuoteRate = Refined 1.13000000})
@@ -184,6 +189,7 @@ findFxQuoteAux date db
 
 -- | Returns empty FX rate quotation database.
 --
+-- >>> :set -XTypeApplications
 -- >>> emptyFxQuoteDatabase @8
 -- fromList []
 emptyFxQuoteDatabase
@@ -194,6 +200,7 @@ emptyFxQuoteDatabase = SM.empty
 
 -- | Adds a list of FX rate quotations to the given database.
 --
+-- >>> :set -XTypeApplications
 -- >>> let database = emptyFxQuoteDatabase @8
 -- >>> addFxQuotes [] database
 -- fromList []

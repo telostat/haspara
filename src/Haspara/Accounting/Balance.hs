@@ -33,6 +33,8 @@ data Balance (precision :: Nat) = Balance
 --
 -- For normal balances:
 --
+-- >>> :set -XDataKinds
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.eitherDecode "{\"side\": \"db\", \"value\": 42}" :: Either String (Balance 2)
 -- Right (Balance {balanceSide = SideDebit, balanceValue = 42.00})
 -- >>> Aeson.eitherDecode "{\"side\": \"cr\", \"value\": 42}" :: Either String (Balance 2)
@@ -52,6 +54,7 @@ instance KnownNat precision => Aeson.FromJSON (Balance precision) where
 --
 -- For normal balances:
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Accounting.Side
 -- >>> import Haspara.Quantity
 -- >>> Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2))
@@ -97,6 +100,7 @@ balanceCredit _ = Nothing
 
 -- | Updates the balance with the given amount.
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Accounting.Amount
 -- >>> import Haspara.Accounting.Side
 -- >>> import Refined.Unsafe
@@ -124,6 +128,7 @@ updateBalance (Balance bSide bVal) (Amount aSide aVal) =
 
 -- | Converts the balance to amount.
 --
+-- >>> :set -XDataKinds
 -- >>> import Haspara.Accounting.Side
 -- >>> amountFromBalance (Balance SideDebit 42 :: Balance 2)
 -- Amount {amountSide = SideDebit, amountValue = Refined 42.00}

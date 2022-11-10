@@ -27,6 +27,7 @@ data Side = SideDebit | SideCredit
 
 -- | 'Aeson.FromJSON' instance for 'Side'.
 --
+-- >>> :set -XOverloadedStrings
 -- >>> Aeson.eitherDecode "\"db\"" :: Either String Side
 -- Right SideDebit
 -- >>> Aeson.eitherDecode "\"cr\"" :: Either String Side
