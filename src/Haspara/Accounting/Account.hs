@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- | This module provides definitions for acccounts and types of accounts as
 -- they are used in accounting reporting.

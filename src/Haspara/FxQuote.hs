@@ -1,5 +1,8 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- | This module provides definitions for modeling and working with foreign
 -- exchange (FX) rate quotations.

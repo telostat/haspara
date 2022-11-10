@@ -25,7 +25,20 @@
 
 - extensions:
   - default: false # All extension are banned by default
-  - name: [DataKinds, DerivingVia] # Only these listed extensions can be used
+  - name:
+    - DataKinds
+    - DeriveGeneric
+    - DeriveLift
+    - FlexibleContexts
+    - FlexibleInstances
+    - GADTs
+    - GeneralizedNewtypeDeriving
+    - KindSignatures
+    - OverloadedStrings
+    - RankNTypes
+    - ScopedTypeVariables
+    - StandaloneDeriving
+    - TypeOperators
 
 ################
 # CUSTOM RULES #

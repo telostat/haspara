@@ -1,4 +1,6 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 -- | This module provides definitions for amounts used as in accounting.
 --

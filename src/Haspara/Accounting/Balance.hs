@@ -1,4 +1,6 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 -- | This module provides definitions for balances used as in accounting.
 module Haspara.Accounting.Balance where

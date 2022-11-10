@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- | This module provides definitions for and functions to work with
 -- Debit/Credit dichotomy which is essential to double-entry bookkeeping.
 --

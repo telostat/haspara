@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 -- | This module provides data definitions and functions for ledgers and
 -- postings.
