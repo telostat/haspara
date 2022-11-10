@@ -24,9 +24,9 @@ stylish-haskell -i -r src/
 Compile the codebase, check warnings and errors:
 
 ```sh
-stack test
-stack build
-stack haddock
+cabal build
+cabal test
+cabal haddock
 ```
 
 Run [hlint](https://github.com/ndmitchell/hlint):
