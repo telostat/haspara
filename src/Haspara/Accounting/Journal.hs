@@ -1,7 +1,6 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DeriveGeneric #-}
-
+{-# LANGUAGE KindSignatures #-}
 
 -- | This module provides data definitions and functions to work with journal
 -- entries.
