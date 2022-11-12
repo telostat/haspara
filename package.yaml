@@ -36,11 +36,19 @@ library:
   - -Wunused-packages
 
 tests:
-  haspara-doctest:
-    main:           doctest.hs
+  haspara-test:
+    main:           test.hs
     source-dirs:    test
     ghc-options:
     - -threaded
     dependencies:
     - haspara
+    - hspec
+
+  haspara-doctest:
+    main:           doctest.hs
+    source-dirs:    .
+    ghc-options:
+    - -threaded
+    dependencies:
     - doctest
