@@ -1,9 +1,6 @@
-import Test.Hspec
+import Tests.Haspara.Accounting.Inventory (testInventory)
 
 
 main :: IO ()
-main = hspec $ do
-  describe "We have tests" $ do
-    it "this should be this, that should be that" $ do
-      "this" `shouldBe` "this"
-      "that" `shouldBe` "that"
+main = do
+  testInventory
