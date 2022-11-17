@@ -39,17 +39,17 @@ data Balance (precision :: Nat) = Balance
 --
 -- >>> :set -XDataKinds
 -- >>> :set -XOverloadedStrings
--- >>> Aeson.eitherDecode "{\"side\": \"db\", \"value\": 42}" :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideDebit, balanceValue = 42.00})
--- >>> Aeson.eitherDecode "{\"side\": \"cr\", \"value\": 42}" :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideCredit, balanceValue = 42.00})
+-- >>> Aeson.eitherDecode "{\"side\": \"db\", \"value\": 42, \"inventory\": {\"current\": [], \"history\": [], \"total\": 0.0}}" :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideDebit, balanceValue = 42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
+-- >>> Aeson.eitherDecode "{\"side\": \"cr\", \"value\": 42, \"inventory\": {\"current\": [], \"history\": [], \"total\": 0.0}}" :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideCredit, balanceValue = 42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
 --
 -- For negative balances:
 --
--- >>> Aeson.eitherDecode "{\"side\": \"db\", \"value\": -42}" :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideDebit, balanceValue = -42.00})
--- >>> Aeson.eitherDecode "{\"side\": \"cr\", \"value\": -42}" :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideCredit, balanceValue = -42.00})
+-- >>> Aeson.eitherDecode "{\"side\": \"db\", \"value\": -42, \"inventory\": {\"current\": [], \"history\": [], \"total\": 0.0}}" :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideDebit, balanceValue = -42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
+-- >>> Aeson.eitherDecode "{\"side\": \"cr\", \"value\": -42, \"inventory\": {\"current\": [], \"history\": [], \"total\": 0.0}}" :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideCredit, balanceValue = -42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
 instance KnownNat precision => Aeson.FromJSON (Balance precision) where
   parseJSON = Aeson.genericParseJSON $ commonAesonOptions "balance"
 
@@ -59,27 +59,28 @@ instance KnownNat precision => Aeson.FromJSON (Balance precision) where
 -- For normal balances:
 --
 -- >>> :set -XDataKinds
+-- >>> import Data.Default (def)
 -- >>> import Haspara.Accounting.Side
 -- >>> import Haspara.Quantity
--- >>> Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2))
--- "{\"side\":\"db\",\"value\":42.0}"
--- >>> Aeson.encode (Balance SideCredit (mkQuantity 42 :: Quantity 2))
--- "{\"side\":\"cr\",\"value\":42.0}"
--- >>> Aeson.eitherDecode (Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2))) :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideDebit, balanceValue = 42.00})
--- >>> Aeson.eitherDecode (Aeson.encode (Balance SideCredit (mkQuantity 42 :: Quantity 2))) :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideCredit, balanceValue = 42.00})
+-- >>> Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2) def)
+-- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"db\",\"value\":42.0}"
+-- >>> Aeson.encode (Balance SideCredit (mkQuantity 42 :: Quantity 2) def)
+-- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"cr\",\"value\":42.0}"
+-- >>> Aeson.eitherDecode (Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2) def)) :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideDebit, balanceValue = 42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
+-- >>> Aeson.eitherDecode (Aeson.encode (Balance SideCredit (mkQuantity 42 :: Quantity 2) def)) :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideCredit, balanceValue = 42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
 --
 -- For negative balances:
 --
--- >>> Aeson.encode (Balance SideDebit (mkQuantity (-42) :: Quantity 2))
--- "{\"side\":\"db\",\"value\":-42.0}"
--- >>> Aeson.encode (Balance SideCredit (mkQuantity (-42) :: Quantity 2))
--- "{\"side\":\"cr\",\"value\":-42.0}"
--- >>> Aeson.eitherDecode (Aeson.encode (Balance SideDebit (mkQuantity (-42) :: Quantity 2))) :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideDebit, balanceValue = -42.00})
--- >>> Aeson.eitherDecode (Aeson.encode (Balance SideCredit (mkQuantity (-42) :: Quantity 2))) :: Either String (Balance 2)
--- Right (Balance {balanceSide = SideCredit, balanceValue = -42.00})
+-- >>> Aeson.encode (Balance SideDebit (mkQuantity (-42) :: Quantity 2) def)
+-- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"db\",\"value\":-42.0}"
+-- >>> Aeson.encode (Balance SideCredit (mkQuantity (-42) :: Quantity 2) def)
+-- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"cr\",\"value\":-42.0}"
+-- >>> Aeson.eitherDecode (Aeson.encode (Balance SideDebit (mkQuantity (-42) :: Quantity 2) def)) :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideDebit, balanceValue = -42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
+-- >>> Aeson.eitherDecode (Aeson.encode (Balance SideCredit (mkQuantity (-42) :: Quantity 2) def)) :: Either String (Balance 2)
+-- Right (Balance {balanceSide = SideCredit, balanceValue = -42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
 instance KnownNat precision => Aeson.ToJSON (Balance precision) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "balance"
 
@@ -105,12 +106,13 @@ balanceCredit _ = Nothing
 -- | Updates the balance with the given amount.
 --
 -- >>> :set -XDataKinds
+-- >>> import Data.Default (def)
 -- >>> import Haspara.Accounting.Amount
 -- >>> import Haspara.Accounting.Side
 -- >>> import Refined.Unsafe
--- >>> let balance = Balance SideDebit 42 :: Balance 2
+-- >>> let balance = Balance SideDebit 42 def :: Balance 2
 -- >>> balance
--- Balance {balanceSide = SideDebit, balanceValue = 42.00}
+-- Balance {balanceSide = SideDebit, balanceValue = 42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}}
 -- >>> let amountDebit = Amount SideDebit (unsafeRefine 10) :: Amount 2
 -- >>> amountDebit
 -- Amount {amountSide = SideDebit, amountValue = Refined 10.00}
@@ -118,9 +120,9 @@ balanceCredit _ = Nothing
 -- >>> amountCredit
 -- Amount {amountSide = SideCredit, amountValue = Refined 10.00}
 -- >>> updateBalance balance amountDebit
--- Balance {balanceSide = SideDebit, balanceValue = 52.00}
+-- Balance {balanceSide = SideDebit, balanceValue = 52.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}}
 -- >>> updateBalance balance amountCredit
--- Balance {balanceSide = SideDebit, balanceValue = 32.00}
+-- Balance {balanceSide = SideDebit, balanceValue = 32.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}}
 updateBalance
   :: KnownNat precision
   => Balance precision
@@ -148,14 +150,15 @@ updateBalanceWithInventory date balance amount quantity =
 -- | Converts the balance to amount.
 --
 -- >>> :set -XDataKinds
+-- >>> import Data.Default (def)
 -- >>> import Haspara.Accounting.Side
--- >>> amountFromBalance (Balance SideDebit 42 :: Balance 2)
+-- >>> amountFromBalance (Balance SideDebit 42 def :: Balance 2)
 -- Amount {amountSide = SideDebit, amountValue = Refined 42.00}
--- >>> amountFromBalance (Balance SideDebit (-42) :: Balance 2)
+-- >>> amountFromBalance (Balance SideDebit (-42) def :: Balance 2)
 -- Amount {amountSide = SideCredit, amountValue = Refined 42.00}
--- >>> amountFromBalance (Balance SideCredit 42 :: Balance 2)
+-- >>> amountFromBalance (Balance SideCredit 42 def :: Balance 2)
 -- Amount {amountSide = SideCredit, amountValue = Refined 42.00}
--- >>> amountFromBalance (Balance SideCredit (-42) :: Balance 2)
+-- >>> amountFromBalance (Balance SideCredit (-42) def :: Balance 2)
 -- Amount {amountSide = SideDebit, amountValue = Refined 42.00}
 amountFromBalance
   :: KnownNat precision
