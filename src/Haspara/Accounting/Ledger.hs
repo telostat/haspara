@@ -250,6 +250,7 @@ postItem ledger date amt dsc evt pid (Just (JournalEntryItemInventoryEvent pnlac
       )
 
 
+-- | Creates 2 journal entry items for the captured non-zero PnL.
 histItemToJournalEntryItem
   :: KnownNat precision
   => event
