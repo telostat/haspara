@@ -57,11 +57,14 @@ weeder --require-hs-files
 
 3. Update the `version` information in [package.yaml](./package.yaml) if
    required, run `hpack` to reflect the change on the `.cabal` file, and
-   recompile the project:
+   recompile the project, run tests and generate Haddock documentation:
 
     ```sh
     hpack
+    cabal clean
     cabal build -O0
+    cabal test -O0
+    cabal haddock -O0
     ```
 
 4. Update [CHANGELOG.md](./CHANGELOG.md) file:
