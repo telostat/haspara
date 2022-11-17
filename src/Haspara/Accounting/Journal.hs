@@ -12,7 +12,7 @@ import Data.Time (Day)
 import GHC.Generics (Generic)
 import GHC.TypeLits (KnownNat, Nat)
 import Haspara.Accounting.Account (Account (accountKind))
-import Haspara.Accounting.Amount (Amount (..), amountFromQuantity, amountFromValue)
+import Haspara.Accounting.Amount (Amount (..), amountFromValue)
 import Haspara.Accounting.Side (Side (..))
 import Haspara.Internal.Aeson (commonAesonOptions)
 import Haspara.Quantity (Quantity, UnsignedQuantity, sumUnsignedQuantity)
@@ -107,6 +107,7 @@ data JournalEntryItem (precision :: Nat) account event = JournalEntryItem
   { journalEntryItemAmount :: !(Amount precision)
   , journalEntryItemAccount :: !(Account account)
   , journalEntryItemEvent :: !event
+  , journalEntryItemInventoryEvent :: !(Maybe (JournalEntryItemInventoryEvent account event))
   }
   deriving (Eq, Generic, Show)
 
@@ -119,22 +120,21 @@ instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson
   toJSON = Aeson.genericToJSON $ commonAesonOptions "journalEntryItem"
 
 
--- | Creates a 'JournalEntryItem' from the given signed /quantity/, the account
--- it belongs to and the event it is originating from.
---
--- The /quantity/ is defined as in 'amountFromQuantity' function.
-mkJournalEntryItemFromQuantity
-  :: KnownNat precision
-  => Quantity precision
-  -> Account account
-  -> event
-  -> JournalEntryItem precision account event
-mkJournalEntryItemFromQuantity qty acc evt =
-  JournalEntryItem
-    { journalEntryItemAmount = amountFromQuantity (accountKind acc) qty
-    , journalEntryItemAccount = acc
-    , journalEntryItemEvent = evt
-    }
+-- | Data definition for inventory event.
+data JournalEntryItemInventoryEvent account event = JournalEntryItemInventoryEvent
+  { journalEntryItemInventoryEventPnlAccount :: !(Account account)
+  , journalEntryItemInventoryEventEvent :: !event
+  , journalEntryItemInventoryEventQuantity :: !(Quantity 12)
+  }
+  deriving (Eq, Generic, Show)
+
+
+instance (Aeson.FromJSON account, Aeson.FromJSON event) => Aeson.FromJSON (JournalEntryItemInventoryEvent account event) where
+  parseJSON = Aeson.genericParseJSON $ commonAesonOptions "journalEntryItemInventoryEvent"
+
+
+instance (Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (JournalEntryItemInventoryEvent account event) where
+  toJSON = Aeson.genericToJSON $ commonAesonOptions "journalEntryItemInventoryEvent"
 
 
 -- | Creates a 'JournalEntryItem' from the given signed /value/, the account it
@@ -152,4 +152,34 @@ mkJournalEntryItemFromValue val acc evt =
     { journalEntryItemAmount = amountFromValue (accountKind acc) val
     , journalEntryItemAccount = acc
     , journalEntryItemEvent = evt
+    , journalEntryItemInventoryEvent = Nothing
+    }
+
+
+-- | Creates a 'JournalEntryItem' with inventory event informationfrom the given
+-- signed /value/, the account it belongs to and the event it is originating
+-- from.
+--
+-- The /value/ is defined as in 'amountFromValue' function.
+mkInventoryJournalEntryItemFromValue
+  :: KnownNat precision
+  => Quantity precision
+  -> Account account
+  -> event
+  -> Account account
+  -> event
+  -> Quantity 12
+  -> JournalEntryItem precision account event
+mkInventoryJournalEntryItemFromValue val acc evt pnlacc pnlevt evtqty =
+  JournalEntryItem
+    { journalEntryItemAmount = amountFromValue (accountKind acc) val
+    , journalEntryItemAccount = acc
+    , journalEntryItemEvent = evt
+    , journalEntryItemInventoryEvent =
+        Just $
+          JournalEntryItemInventoryEvent
+            { journalEntryItemInventoryEventPnlAccount = pnlacc
+            , journalEntryItemInventoryEventQuantity = evtqty
+            , journalEntryItemInventoryEventEvent = pnlevt
+            }
     }
