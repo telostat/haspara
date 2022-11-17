@@ -36,8 +36,10 @@
     - KindSignatures
     - OverloadedStrings
     - RankNTypes
+    - RecordWildCards
     - ScopedTypeVariables
     - StandaloneDeriving
+    - TypeApplications
     - TypeOperators
 
 ################

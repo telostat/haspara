@@ -1,22 +1,27 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- | This module provides data definitions and functions for ledgers and
 -- postings.
 module Haspara.Accounting.Ledger where
 
 import qualified Data.Aeson as Aeson
+import Data.Default (def)
+import Data.Foldable (foldl')
 import qualified Data.Map.Strict as HM
-import Data.Maybe (fromMaybe, listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe, maybeToList)
 import qualified Data.Text as T
 import Data.Time (Day)
 import GHC.Generics (Generic)
 import GHC.TypeLits (KnownNat, Nat)
 import Haspara.Accounting.Account (Account (accountKind))
 import Haspara.Accounting.Amount (Amount, amountFromQuantity, amountFromValue)
-import Haspara.Accounting.Balance (Balance (Balance), updateBalance)
-import Haspara.Accounting.Journal (JournalEntry (..), JournalEntryItem (JournalEntryItem))
+import Haspara.Accounting.Balance (Balance (Balance), updateBalance, updateBalanceWithInventory)
+import Haspara.Accounting.Inventory (InventoryHistoryItem (MkInventoryHistoryItem, inventoryHistoryItemPnl), updateInventoryVV)
+import Haspara.Accounting.Journal (JournalEntry (..), JournalEntryItem (..), JournalEntryItemInventoryEvent (JournalEntryItemInventoryEvent))
 import Haspara.Accounting.Side (normalSideByAccountKind)
 import Haspara.Internal.Aeson (commonAesonOptions)
 import Haspara.Quantity (Quantity)
@@ -90,7 +95,7 @@ initLedger
   -> Ledger precision account event
 initLedger acc = Ledger acc balance []
   where
-    balance = Balance (normalSideByAccountKind (accountKind acc)) 0
+    balance = Balance (normalSideByAccountKind (accountKind acc)) 0 def
 
 
 -- | Initializes a ledger with the given opening balance.
@@ -108,12 +113,15 @@ initLedgerWithOpeningBalance acc balance = Ledger acc balance []
 initLedgerWithOpeningValue
   :: KnownNat precision
   => Account account
-  -> Quantity precision
+  -> (Maybe (Quantity 12), Quantity precision)
   -> Ledger precision account event
-initLedgerWithOpeningValue acc qty = initLedgerWithOpeningBalance acc balance
+initLedgerWithOpeningValue acc (mstk, qty) = initLedgerWithOpeningBalance acc balance
   where
+    inventory = snd $ case mstk of
+      Nothing -> def
+      Just sq -> updateInventoryVV (read "1970-01-01") qty sq def
     amount = amountFromValue (accountKind acc) qty
-    balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0
+    balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0 inventory
     balance = updateBalance balance0 amount
 
 
@@ -123,12 +131,15 @@ initLedgerWithOpeningValue acc qty = initLedgerWithOpeningBalance acc balance
 initLedgerWithOpeningQuantity
   :: KnownNat precision
   => Account account
-  -> Quantity precision
+  -> (Maybe (Quantity 12), Quantity precision)
   -> Ledger precision account event
-initLedgerWithOpeningQuantity acc qty = initLedgerWithOpeningBalance acc balance
+initLedgerWithOpeningQuantity acc (mstk, qty) = initLedgerWithOpeningBalance acc balance
   where
+    inventory = snd $ case mstk of
+      Nothing -> def
+      Just sq -> updateInventoryVV (read "1970-01-01") qty sq def
     amount = amountFromQuantity (accountKind acc) qty
-    balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0
+    balance0 = Balance (normalSideByAccountKind (accountKind acc)) 0 inventory
     balance = updateBalance balance0 amount
 
 
@@ -166,15 +177,20 @@ postEntryItem
   -> JournalEntry precision account event
   -> JournalEntryItem precision account event
   -> GeneralLedger precision account event
-postEntryItem gl je (JournalEntryItem amt acc evt) =
+postEntryItem gl je (JournalEntryItem amt acc evt invevt) =
   let ledgers = generalLedgerLedgers gl
       ledgersDb = HM.fromList $ zip (fmap ledgerAccount ledgers) ledgers
       ledgerCurr = fromMaybe (initLedger acc) $ HM.lookup acc ledgersDb
-      ledgerNext = postItem ledgerCurr (journalEntryDate je) amt (journalEntryDescription je) evt (journalEntryId je)
+      jeDate = journalEntryDate je
+      jeDesc = journalEntryDescription je
+      jeCode = journalEntryId je
+      (jePnl, ledgerNext) = postItem ledgerCurr jeDate amt jeDesc evt jeCode invevt
       ledgersDbNext = HM.insert acc ledgerNext ledgersDb
-   in GeneralLedger
-        { generalLedgerLedgers = HM.elems ledgersDbNext
-        }
+      ngl =
+        GeneralLedger
+          { generalLedgerLedgers = HM.elems ledgersDbNext
+          }
+   in postEntries ngl (maybeToList jePnl)
 
 
 -- | Performs a posting to the given ledger.
@@ -186,8 +202,9 @@ postItem
   -> T.Text
   -> event
   -> T.Text
-  -> Ledger precision account event
-postItem ledger date amt dsc evt pid =
+  -> Maybe (JournalEntryItemInventoryEvent account event)
+  -> (Maybe (JournalEntry precision account event), Ledger precision account event)
+postItem ledger date amt dsc evt pid Nothing =
   let balanceLast = ledgerClosing ledger
       balanceNext = updateBalance balanceLast amt
       item =
@@ -199,6 +216,61 @@ postItem ledger date amt dsc evt pid =
           , ledgerEntryPostingId = pid
           , ledgerEntryBalance = balanceNext
           }
-   in ledger
-        { ledgerRunning = item : ledgerRunning ledger
-        }
+   in ( Nothing
+      , ledger
+          { ledgerRunning = item : ledgerRunning ledger
+          }
+      )
+postItem ledger date amt dsc evt pid (Just (JournalEntryItemInventoryEvent pnlacc pnlevt evtqty)) =
+  let balanceLast = ledgerClosing ledger
+      (histitems, balanceNext) = updateBalanceWithInventory date balanceLast amt evtqty
+      item =
+        LedgerEntry
+          { ledgerEntryDate = date
+          , ledgerEntryAmount = amt
+          , ledgerEntryDescription = dsc
+          , ledgerEntryEvent = evt
+          , ledgerEntryPostingId = pid
+          , ledgerEntryBalance = balanceNext
+          }
+      mje = case histitems of
+        [] -> Nothing
+        _ ->
+          Just $
+            JournalEntry
+              { journalEntryId = pid
+              , journalEntryDate = date
+              , journalEntryItems = foldl' (\a c -> a <> histItemToJournalEntryItem pnlevt (ledgerAccount ledger) pnlacc c) [] histitems
+              , journalEntryDescription = "Realized PnL due to: " <> dsc
+              }
+   in ( mje
+      , ledger
+          { ledgerRunning = item : ledgerRunning ledger
+          }
+      )
+
+
+histItemToJournalEntryItem
+  :: KnownNat precision
+  => event
+  -> Account account
+  -> Account account
+  -> InventoryHistoryItem 8 12 precision
+  -> [JournalEntryItem precision account event]
+histItemToJournalEntryItem event accAsset accRevenue MkInventoryHistoryItem {..} =
+  if inventoryHistoryItemPnl == 0
+    then []
+    else
+      [ JournalEntryItem
+          { journalEntryItemAmount = amountFromQuantity (accountKind accAsset) inventoryHistoryItemPnl
+          , journalEntryItemAccount = accAsset
+          , journalEntryItemEvent = event
+          , journalEntryItemInventoryEvent = Nothing
+          }
+      , JournalEntryItem
+          { journalEntryItemAmount = amountFromQuantity (accountKind accRevenue) inventoryHistoryItemPnl
+          , journalEntryItemAccount = accRevenue
+          , journalEntryItemEvent = event
+          , journalEntryItemInventoryEvent = Nothing
+          }
+      ]

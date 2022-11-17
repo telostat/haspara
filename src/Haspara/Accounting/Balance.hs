@@ -1,15 +1,18 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE KindSignatures #-}
 
 -- | This module provides definitions for balances used as in accounting.
 module Haspara.Accounting.Balance where
 
 import qualified Data.Aeson as Aeson
+import qualified Data.Foldable as Foldable
+import Data.Time (Day)
 import GHC.Generics (Generic)
 import GHC.TypeLits (KnownNat, Nat)
-import Haspara.Accounting.Account (AccountKind)
+import Haspara.Accounting.Account (AccountKind (AccountKindAsset))
 import Haspara.Accounting.Amount (Amount (Amount), quantityFromAmount, valueFromAmount)
+import Haspara.Accounting.Inventory (Inventory, InventoryHistoryItem, updateInventoryVV)
 import Haspara.Accounting.Side (Side (..), otherSide)
 import Haspara.Internal.Aeson (commonAesonOptions)
 import Haspara.Quantity (Quantity, absQuantity)
@@ -25,6 +28,7 @@ import Refined (unrefine)
 data Balance (precision :: Nat) = Balance
   { balanceSide :: !Side
   , balanceValue :: !(Quantity precision)
+  , balanceInventory :: !(Inventory 8 12 precision)
   }
   deriving (Eq, Generic, Show)
 
@@ -85,7 +89,7 @@ balanceDebit
   :: KnownNat precision
   => Balance precision
   -> Maybe (Quantity precision)
-balanceDebit (Balance SideDebit v) = Just v
+balanceDebit (Balance SideDebit v _) = Just v
 balanceDebit _ = Nothing
 
 
@@ -94,7 +98,7 @@ balanceCredit
   :: KnownNat precision
   => Balance precision
   -> Maybe (Quantity precision)
-balanceCredit (Balance SideCredit v) = Just v
+balanceCredit (Balance SideCredit v _) = Just v
 balanceCredit _ = Nothing
 
 
@@ -122,8 +126,23 @@ updateBalance
   => Balance precision
   -> Amount precision
   -> Balance precision
-updateBalance (Balance bSide bVal) (Amount aSide aVal) =
-  Balance bSide (bVal + (unrefine aVal * (if bSide == aSide then 1 else (-1))))
+updateBalance (Balance bSide bVal inventory) (Amount aSide aVal) =
+  Balance bSide (bVal + (unrefine aVal * (if bSide == aSide then 1 else (-1)))) inventory
+
+
+-- | Updates the balance with additional inventory event.
+updateBalanceWithInventory
+  :: KnownNat precision
+  => Day
+  -> Balance precision
+  -> Amount precision
+  -> Quantity 12
+  -> ([InventoryHistoryItem 8 12 precision], Balance precision)
+updateBalanceWithInventory date balance amount quantity =
+  let nb = updateBalance balance amount
+      vv = abs (valueFromAmount AccountKindAsset amount)
+      (is, ni) = updateInventoryVV date vv quantity (balanceInventory nb)
+   in (Foldable.toList is, nb {balanceInventory = ni})
 
 
 -- | Converts the balance to amount.
@@ -142,7 +161,7 @@ amountFromBalance
   :: KnownNat precision
   => Balance precision
   -> Amount precision
-amountFromBalance (Balance side value) =
+amountFromBalance (Balance side value _) =
   Amount (if value < 0 then otherSide side else side) (absQuantity value)
 
 

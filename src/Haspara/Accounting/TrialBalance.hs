@@ -1,11 +1,12 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE KindSignatures #-}
 
 -- | This module provides data definitions and functions for trial balances.
 module Haspara.Accounting.TrialBalance where
 
 import qualified Data.Aeson as Aeson
+import Data.Default (def)
 import GHC.Generics (Generic)
 import GHC.TypeLits (KnownNat, Nat)
 import Haspara.Accounting.Amount (Amount)
@@ -81,6 +82,6 @@ trialBalanceTotals
 trialBalanceTotals (TrialBalance items) =
   let itemsFromDb = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideDebit . balanceSide . trialBalanceItemBalance) items
       itemsFromCr = amountFromBalance . trialBalanceItemBalance <$> filter ((==) SideCredit . balanceSide . trialBalanceItemBalance) items
-      totalDb = foldl updateBalance (Balance SideDebit 0) itemsFromDb
-      totalCr = foldl updateBalance (Balance SideCredit 0) itemsFromCr
+      totalDb = foldl updateBalance (Balance SideDebit 0 def) itemsFromDb
+      totalCr = foldl updateBalance (Balance SideCredit 0 def) itemsFromCr
    in (totalDb, totalCr)

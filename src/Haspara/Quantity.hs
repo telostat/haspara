@@ -1,14 +1,14 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DeriveLift #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 -- | This module provides definitions for modeling and working with quantities
@@ -300,6 +300,68 @@ times q1 q2 = roundQuantity (timesLossless q1 q2)
 -- 0.1764
 timesLossless :: (KnownNat s, KnownNat k) => Quantity s -> Quantity k -> Quantity (s + k)
 timesLossless (MkQuantity d1) (MkQuantity d2) = MkQuantity (D.timesDecimal d1 d2)
+
+
+-- | Divides two quantities with same scales with possible loss.
+--
+-- >>> divide (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 2)
+-- Just 3.33
+-- >>> divide (mkQuantity 0.42 :: Quantity 2) (mkQuantity 0 :: Quantity 2)
+-- Nothing
+-- >>> divide (mkQuantity 0.42 :: Quantity 2) (mkQuantity 1 :: Quantity 2)
+-- Just 0.42
+-- >>> divide (mkQuantity 0.42 :: Quantity 2) (mkQuantity 0.42 :: Quantity 2)
+-- Just 1.00
+-- >>> divide (mkQuantity 0.42 :: Quantity 2) (mkQuantity 0.21 :: Quantity 2)
+-- Just 2.00
+-- >>> divide (mkQuantity 0.42 :: Quantity 2) (mkQuantity (-0.21) :: Quantity 2)
+-- Just -2.00
+divide :: (KnownNat s) => Quantity s -> Quantity s -> Maybe (Quantity s)
+divide (MkQuantity d1) (MkQuantity d2) = MkQuantity <$> D.divideDecimalWithRounding d1 d2
+
+
+-- | Divides two quantities with different scales with possible loss preserving
+-- dividend's precision.
+--
+-- >>> divideL (mkQuantity 10 :: Quantity 1) (mkQuantity 3 :: Quantity 2)
+-- Just 3.3
+-- >>> divideL (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 2)
+-- Just 3.33
+-- >>> divideL (mkQuantity 10 :: Quantity 3) (mkQuantity 3 :: Quantity 2)
+-- Just 3.333
+divideL :: (KnownNat s, KnownNat k) => Quantity s -> Quantity k -> Maybe (Quantity s)
+divideL (MkQuantity d1) d2 = MkQuantity <$> D.divideDecimalWithRounding d1 (unQuantity $ 1 `times` d2)
+
+
+-- | Divides two quantities with different scales with possible loss preserving
+-- divisor's precision.
+--
+-- >>> divideR (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 1)
+-- Just 3.3
+-- >>> divideR (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 2)
+-- Just 3.33
+-- >>> divideR (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 3)
+-- Just 3.333
+divideR :: (KnownNat s, KnownNat k) => Quantity s -> Quantity k -> Maybe (Quantity k)
+divideR d1 (MkQuantity d2) = MkQuantity <$> D.divideDecimalWithRounding (unQuantity $ 1 `times` d1) d2
+
+
+-- | Divides two quantities with different scales with possible loss with a
+-- target precision of result.
+--
+-- >>> :set -XTypeApplications
+-- >>> divideD @0 (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 2)
+-- Just 3
+-- >>> divideD @1 (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 2)
+-- Just 3.3
+-- >>> divideD @2 (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 2)
+-- Just 3.33
+-- >>> divideD @3 (mkQuantity 10 :: Quantity 2) (mkQuantity 3 :: Quantity 2)
+-- Just 3.333
+-- >>> divideD @8 (mkQuantity 1111 :: Quantity 2) (mkQuantity 3333 :: Quantity 12)
+-- Just 0.33333333
+divideD :: (KnownNat r, KnownNat s, KnownNat k) => Quantity s -> Quantity k -> Maybe (Quantity r)
+divideD d1 d2 = MkQuantity <$> D.divideDecimalWithRounding (unQuantity $ 1 `times` d1) (unQuantity $ 1 `times` d2)
 
 
 -- | Returns the total of a list of unsigned quantities.
