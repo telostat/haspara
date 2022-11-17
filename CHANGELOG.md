@@ -2,10 +2,40 @@
 ## [Unreleased]
 
 
+<a name="0.0.0.6"></a>
+## [0.0.0.6] - 2022-11-17
+### Chore
+- bump development version to 0.0.0.6
+- remove stylish-haskell configuration
+- drop Stack usage
+- **deps:** park library dependencies under library section
+- **docs:** update development and release procedure in README
+- **nix:** use telos.nix
+- **test:** get ready for hspec-based testing
+
+### Feat
+- integrate inventory accounting into posting
+- add division operations for `Quantity` type
+
+### Fix
+- **test:** revisit doctests, adopt 9.x TH changes
+
+### Refactor
+- start working on inventory machinery
+- reorder language pragmas
+- drop Haskell 2021 Extensions in favour of explicit pragmas
+- reformat codebase using fourmolu
+
+### Pull Requests
+- Merge pull request [#13](https://github.com/telostat/haspara/issues/13) from telostat/vst/pnl-capture
+- Merge pull request [#12](https://github.com/telostat/haspara/issues/12) from telostat/develop
+
+
 <a name="0.0.0.5"></a>
 ## [0.0.0.5] - 2022-06-23
 ### Chore
 - bump development version to 0.0.0.5
+- **release:** 0.0.0.5
 
 ### Feat
 - **accounting:** add Aeson instances to Haspara.Accounting.Journal module
@@ -119,7 +149,8 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.5...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.6...HEAD
+[0.0.0.6]: https://github.com/telostat/haspara/compare/0.0.0.5...0.0.0.6
 [0.0.0.5]: https://github.com/telostat/haspara/compare/0.0.0.4...0.0.0.5
 [0.0.0.4]: https://github.com/telostat/haspara/compare/0.0.0.3...0.0.0.4
 [0.0.0.3]: https://github.com/telostat/haspara/compare/0.0.0.2...0.0.0.3
