@@ -14,6 +14,7 @@
 module Haspara.Accounting.Side where
 
 import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.Encoding as Aeson.Encoding
 import qualified Data.Text as T
 import GHC.TypeLits (KnownNat)
 import Haspara.Accounting.Account (AccountKind (..))
@@ -54,6 +55,10 @@ instance Aeson.FromJSON Side where
 instance Aeson.ToJSON Side where
   toJSON SideDebit = Aeson.String "db"
   toJSON SideCredit = Aeson.String "cr"
+
+
+  toEncoding SideDebit = Aeson.Encoding.text "db"
+  toEncoding SideCredit = Aeson.Encoding.text "cr"
 
 
 -- | Gives the other side.

@@ -50,6 +50,7 @@ instance KnownNat s => Aeson.FromJSON (FxQuote s) where
 
 instance KnownNat s => Aeson.ToJSON (FxQuote s) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "fxQuote"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "fxQuote"
 
 
 -- | Smart constructor for 'FxQuote' values within @'MonadError' 'T.Text'@

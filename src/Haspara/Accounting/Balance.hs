@@ -63,9 +63,9 @@ instance KnownNat precision => Aeson.FromJSON (Balance precision) where
 -- >>> import Haspara.Accounting.Side
 -- >>> import Haspara.Quantity
 -- >>> Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2) def)
--- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"db\",\"value\":42.0}"
+-- "{\"side\":\"db\",\"value\":42.0,\"inventory\":{\"total\":0.0,\"current\":[],\"history\":[]}}"
 -- >>> Aeson.encode (Balance SideCredit (mkQuantity 42 :: Quantity 2) def)
--- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"cr\",\"value\":42.0}"
+-- "{\"side\":\"cr\",\"value\":42.0,\"inventory\":{\"total\":0.0,\"current\":[],\"history\":[]}}"
 -- >>> Aeson.eitherDecode (Aeson.encode (Balance SideDebit (mkQuantity 42 :: Quantity 2) def)) :: Either String (Balance 2)
 -- Right (Balance {balanceSide = SideDebit, balanceValue = 42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
 -- >>> Aeson.eitherDecode (Aeson.encode (Balance SideCredit (mkQuantity 42 :: Quantity 2) def)) :: Either String (Balance 2)
@@ -74,15 +74,16 @@ instance KnownNat precision => Aeson.FromJSON (Balance precision) where
 -- For negative balances:
 --
 -- >>> Aeson.encode (Balance SideDebit (mkQuantity (-42) :: Quantity 2) def)
--- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"db\",\"value\":-42.0}"
+-- "{\"side\":\"db\",\"value\":-42.0,\"inventory\":{\"total\":0.0,\"current\":[],\"history\":[]}}"
 -- >>> Aeson.encode (Balance SideCredit (mkQuantity (-42) :: Quantity 2) def)
--- "{\"inventory\":{\"current\":[],\"history\":[],\"total\":0.0},\"side\":\"cr\",\"value\":-42.0}"
+-- "{\"side\":\"cr\",\"value\":-42.0,\"inventory\":{\"total\":0.0,\"current\":[],\"history\":[]}}"
 -- >>> Aeson.eitherDecode (Aeson.encode (Balance SideDebit (mkQuantity (-42) :: Quantity 2) def)) :: Either String (Balance 2)
 -- Right (Balance {balanceSide = SideDebit, balanceValue = -42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
 -- >>> Aeson.eitherDecode (Aeson.encode (Balance SideCredit (mkQuantity (-42) :: Quantity 2) def)) :: Either String (Balance 2)
 -- Right (Balance {balanceSide = SideCredit, balanceValue = -42.00, balanceInventory = MkInventory {inventoryTotal = 0.000000000000, inventoryCurrent = fromList [], inventoryHistory = fromList []}})
 instance KnownNat precision => Aeson.ToJSON (Balance precision) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "balance"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "balance"
 
 
 -- | Returns the debit quantity, if any.

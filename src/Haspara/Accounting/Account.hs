@@ -69,6 +69,7 @@ instance Aeson.FromJSON AccountKind where
 
 instance Aeson.ToJSON AccountKind where
   toJSON = Aeson.genericToJSON $ aesonOptionsForSingleTag "AccountKind"
+  toEncoding = Aeson.genericToEncoding $ aesonOptionsForSingleTag "AccountKind"
 
 
 -- | Provides textual representation of a given 'AccountKind'.
@@ -125,3 +126,4 @@ instance Aeson.FromJSON o => Aeson.FromJSON (Account o) where
 
 instance Aeson.ToJSON o => Aeson.ToJSON (Account o) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "account"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "account"
