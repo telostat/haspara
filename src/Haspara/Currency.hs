@@ -10,6 +10,7 @@ module Haspara.Currency where
 
 import Control.Monad.Except (MonadError (throwError))
 import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.Encoding as Aeson.Encoding
 import Data.Hashable (Hashable)
 import Data.String (IsString (..))
 import qualified Data.Text as T
@@ -87,6 +88,7 @@ instance Aeson.FromJSON Currency where
 -- "\"USD\""
 instance Aeson.ToJSON Currency where
   toJSON (MkCurrency c) = Aeson.String c
+  toEncoding (MkCurrency c) = Aeson.Encoding.text c
 
 
 -- | Smart constructor for 'Currency' values within 'MonadError' context.
@@ -185,6 +187,7 @@ instance Aeson.FromJSON CurrencyPair where
 
 instance Aeson.ToJSON CurrencyPair where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "currencyPair"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "currencyPair"
 
 
 -- | 'Show' instance for 'CurrencyPair'.

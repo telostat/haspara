@@ -54,6 +54,7 @@ instance KnownNat precision => Aeson.FromJSON (Amount precision) where
 -- Right (Amount {amountSide = SideCredit, amountValue = Refined 42.00})
 instance KnownNat precision => Aeson.ToJSON (Amount precision) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "amount"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "amount"
 
 
 -- | Returns the debit value of the 'Amount', if any.

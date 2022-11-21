@@ -29,6 +29,7 @@ instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => A
 
 instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (TrialBalance precision account event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "trialBalance"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "trialBalance"
 
 
 -- | Data definition for a trial balance item.
@@ -45,6 +46,7 @@ instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => A
 
 instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (TrialBalanceItem precision account event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "trialBalanceItem"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "trialBalanceItem"
 
 
 -- | Returns the amount of the trial balance item. This is a simple conversion

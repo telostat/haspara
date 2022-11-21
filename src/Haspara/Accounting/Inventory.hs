@@ -55,6 +55,7 @@ instance (KnownNat pprec, KnownNat sprec, KnownNat vprec) => Aeson.FromJSON (Inv
 
 instance (KnownNat pprec, KnownNat sprec, KnownNat vprec) => Aeson.ToJSON (Inventory pprec sprec vprec) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "inventory"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "inventory"
 
 
 -- | Data definition for inventory events.
@@ -77,6 +78,7 @@ instance (KnownNat pprec, KnownNat sprec) => Aeson.FromJSON (InventoryEvent ppre
 
 instance (KnownNat pprec, KnownNat sprec) => Aeson.ToJSON (InventoryEvent pprec sprec) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "inventoryEvent"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "inventoryEvent"
 
 
 -- | Data definition for PnL-taking inventory history items.
@@ -110,6 +112,7 @@ instance (KnownNat pprec, KnownNat sprec, KnownNat vprec) => Aeson.FromJSON (Inv
 
 instance (KnownNat pprec, KnownNat sprec, KnownNat vprec) => Aeson.ToJSON (InventoryHistoryItem pprec sprec vprec) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "inventoryHistoryItem"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "inventoryHistoryItem"
 
 
 -- * Operations

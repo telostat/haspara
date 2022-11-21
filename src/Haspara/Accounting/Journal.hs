@@ -35,6 +35,7 @@ instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => A
 
 instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (Journal precision account event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "journal"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "journal"
 
 
 -- | Data definition for a journal entry.
@@ -57,6 +58,7 @@ instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => A
 
 instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (JournalEntry precision account event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "journalEntry"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "journalEntry"
 
 
 -- | Returns the total debit amount of a journal entry.
@@ -118,6 +120,7 @@ instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => A
 
 instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (JournalEntryItem precision account event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "journalEntryItem"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "journalEntryItem"
 
 
 -- | Data definition for inventory event.
@@ -135,6 +138,7 @@ instance (Aeson.FromJSON account, Aeson.FromJSON event) => Aeson.FromJSON (Journ
 
 instance (Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (JournalEntryItemInventoryEvent account event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "journalEntryItemInventoryEvent"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "journalEntryItemInventoryEvent"
 
 
 -- | Creates a 'JournalEntryItem' from the given signed /value/, the account it

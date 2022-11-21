@@ -45,6 +45,7 @@ instance KnownNat s => Aeson.FromJSON (Money s) where
 
 instance KnownNat s => Aeson.ToJSON (Money s) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "money"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "money"
 
 
 -- | Type encoding of a monetary context.

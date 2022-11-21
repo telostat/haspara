@@ -18,6 +18,7 @@ module Haspara.Quantity where
 import Control.Applicative (liftA2)
 import Control.Monad.Except (MonadError (throwError))
 import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.Encoding as Aeson.Encoding
 import Data.Either (fromRight)
 import Data.Proxy (Proxy (..))
 import Data.Scientific (FPFormat (Fixed), Scientific, formatScientific)
@@ -100,6 +101,7 @@ instance (KnownNat s) => Aeson.FromJSON (Quantity s) where
 -- "0.42"
 instance (KnownNat s) => Aeson.ToJSON (Quantity s) where
   toJSON = Aeson.Number . D.toScientificDecimal . unQuantity
+  toEncoding = Aeson.Encoding.scientific . D.toScientificDecimal . unQuantity
 
 
 -- | Numeric arithmetic over 'Quantity' values.

@@ -40,6 +40,7 @@ instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => A
 
 instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (GeneralLedger precision account event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "generalLedger"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "generalLedger"
 
 
 -- | Data definition for a ledger.
@@ -58,6 +59,7 @@ instance (KnownNat precision, Aeson.FromJSON account, Aeson.FromJSON event) => A
 instance (KnownNat precision, Aeson.ToJSON account, Aeson.ToJSON event) => Aeson.ToJSON (Ledger precision account event) where
   -- TODO: Add ledgerClosing, too.
   toJSON = Aeson.genericToJSON $ commonAesonOptions "ledger"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "ledger"
 
 
 -- | Returns the closing balance of a ledger.
@@ -86,6 +88,7 @@ instance (KnownNat precision, Aeson.FromJSON event) => Aeson.FromJSON (LedgerEnt
 
 instance (KnownNat precision, Aeson.ToJSON event) => Aeson.ToJSON (LedgerEntry precision event) where
   toJSON = Aeson.genericToJSON $ commonAesonOptions "ledgerEntry"
+  toEncoding = Aeson.genericToEncoding $ commonAesonOptions "ledgerEntry"
 
 
 -- | Initializes an empty ledger for a given account.
