@@ -20,7 +20,7 @@ let
     };
 
   ## Get this package:
-  thisPackage = haskell.callCabal2nixWithOptions "haspara" ../. "--no-haddock" { };
+  thisPackage = haskell.callCabal2nix "haspara" ../. { };
 
   ## Get this package's Haskell dependencies:
   thisPackageDeps = pkgs.haskell.lib.compose.getHaskellBuildInputs thisPackage;

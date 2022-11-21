@@ -13,6 +13,28 @@
 *haspara* is a Haskell library that provides monetary definitions and a
 rudimentary (and experimental) accounting functionality.
 
+## Supported GHC Versions
+
+1. `ghc90`
+1. `ghc92`
+
+At the moment, there is no particular reason for not supporting
+`ghc94` except that required settings are not done yet in Nix support
+files, in particular for Cabal dependency.
+
+## Testing Against GHC Versions
+
+You can use Nix support to test against different GHC versions:
+
+```sh
+nix-build --arg compiler "\"ghc92\""
+nix-build --arg compiler "\"ghc90\""
+```
+
+`nix-build` command will default to `ghc90`. Check `./default.nix`
+file for the default `ghc` version in case that this documentation is
+out of date.
+
 ## Development
 
 Before committing code to repository, reformat the code:
@@ -65,6 +87,8 @@ weeder --require-hs-files
     cabal build -O0
     cabal test -O0
     cabal haddock -O0
+    nix-build --arg compiler "\"ghc92\""
+    nix-build --arg compiler "\"ghc90\""
     ```
 
 4. Update [CHANGELOG.md](./CHANGELOG.md) file:
