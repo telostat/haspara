@@ -105,7 +105,13 @@ weeder --require-hs-files
     git push --follow-tags origin main
     ```
 
-6. Create the package, upload to Hackage as a candidate first and check the result:
+6. Publish GitHub release:
+
+    ```sh
+    gh release create "<NEW-VERSION>" --title "v<NEW-VERSION>" --generate-notes
+    ```
+
+7. Create the package, upload to Hackage as a candidate first and check the result:
 
     ```sh
     cabal clean
@@ -116,7 +122,7 @@ weeder --require-hs-files
     cabal upload <path to .tar.gz archive>
     ```
 
-7. If the candidate package release works fine, release to Hackage:
+8. If the candidate package release works fine, release to Hackage:
 
     ```sh
     cabal upload --publish <path to .tar.gz archive>
