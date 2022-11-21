@@ -2,11 +2,28 @@
 ## [Unreleased]
 
 
+<a name="0.0.0.8"></a>
+## [0.0.0.8] - 2022-11-21
+### Chore
+- bump development version to 0.0.0.8
+- **nix:** make it more convenient to test against different ghc versions
+- **nix:** make default haspara Nix package come with haddock
+
+### Fix
+- add explicit Aeson.ToJSON.toEncoding implementations
+- **deps:** support ghc92
+
+### Pull Requests
+- Merge pull request [#17](https://github.com/telostat/haspara/issues/17) from telostat/15-make-it-more-convenient-to-test-against-different-ghc-versions
+- Merge pull request [#16](https://github.com/telostat/haspara/issues/16) from telostat/vst/aeson-encoding
+
+
 <a name="0.0.0.7"></a>
 ## [0.0.0.7] - 2022-11-17
 ### Chore
 - bump development version to 0.0.0.7
 - **dev:** document pre-release checks
+- **release:** 0.0.0.7
 
 ### Docs
 - add missing Haddock documentation for function
@@ -166,7 +183,8 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.7...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.8...HEAD
+[0.0.0.8]: https://github.com/telostat/haspara/compare/0.0.0.7...0.0.0.8
 [0.0.0.7]: https://github.com/telostat/haspara/compare/0.0.0.6...0.0.0.7
 [0.0.0.6]: https://github.com/telostat/haspara/compare/0.0.0.5...0.0.0.6
 [0.0.0.5]: https://github.com/telostat/haspara/compare/0.0.0.4...0.0.0.5
