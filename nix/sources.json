@@ -1,14 +1,14 @@
 {
-    "telosnix": {
-        "branch": "v0.0.4",
-        "description": null,
+    "nixpkgs": {
+        "branch": "release-24.05",
+        "description": "Nix Packages collection",
         "homepage": null,
-        "owner": "telostat",
-        "repo": "telos.nix",
-        "rev": "4d45ee0f57fb6979781b726cdf87eb68f4ef672d",
-        "sha256": "0my9pmbvyfpj3n747zmwhl6fk8mhnmirl18zmlpy29g1pcd891k2",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "24f1a65397b6c1c7c71733f2e68f3ad7b8e6c139",
+        "sha256": "164fid4jf62rdh6dg8b3m8nb5j5xv03psakzfclkfnmnp3ig9mvi",
         "type": "tarball",
-        "url": "https://github.com/telostat/telos.nix/archive/4d45ee0f57fb6979781b726cdf87eb68f4ef672d.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/24f1a65397b6c1c7c71733f2e68f3ad7b8e6c139.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
