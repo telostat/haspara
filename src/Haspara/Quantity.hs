@@ -15,7 +15,6 @@
 -- with fixed decimal points.
 module Haspara.Quantity where
 
-import Control.Applicative (liftA2)
 import Control.Monad.Except (MonadError (throwError))
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Encoding as Aeson.Encoding
@@ -91,7 +90,7 @@ deriving instance TH.Lift (Quantity s)
 -- Just 0.42
 -- >>> Aeson.decode "0.425" :: Maybe (Quantity 2)
 -- Just 0.42
-instance (KnownNat s) => Aeson.FromJSON (Quantity s) where
+instance KnownNat s => Aeson.FromJSON (Quantity s) where
   parseJSON = Aeson.withScientific "Quantity" (pure . mkQuantity)
 
 
@@ -99,7 +98,7 @@ instance (KnownNat s) => Aeson.FromJSON (Quantity s) where
 --
 -- >>> Aeson.encode (mkQuantity 0.42 :: Quantity 2)
 -- "0.42"
-instance (KnownNat s) => Aeson.ToJSON (Quantity s) where
+instance KnownNat s => Aeson.ToJSON (Quantity s) where
   toJSON = Aeson.Number . D.toScientificDecimal . unQuantity
   toEncoding = Aeson.Encoding.scientific . D.toScientificDecimal . unQuantity
 
@@ -126,7 +125,7 @@ instance (KnownNat s) => Aeson.ToJSON (Quantity s) where
 -- Right 42.00
 -- >>> arithM (fromInteger 42) :: Either SomeException (Quantity 2)
 -- Right 42.00
-instance (KnownNat s) => Num (D.Arith (Quantity s)) where
+instance KnownNat s => Num (D.Arith (Quantity s)) where
   (+) = liftA2 (+)
   (-) = liftA2 (-)
   (*) = liftA2 (*)
@@ -153,7 +152,7 @@ instance (KnownNat s) => Num (D.Arith (Quantity s)) where
 -- Right 42.00
 -- >>> arithM (Arith a / Arith b / Arith c) :: Either SomeException (Quantity 2)
 -- Left divide by zero
-instance (KnownNat s) => Fractional (D.Arith (Quantity s)) where
+instance KnownNat s => Fractional (D.Arith (Quantity s)) where
   a / b = fmap MkQuantity $ fmap unQuantity a / fmap unQuantity b
   fromRational = fmap MkQuantity . D.fromRationalDecimalWithoutLoss
 
@@ -318,7 +317,7 @@ timesLossless (MkQuantity d1) (MkQuantity d2) = MkQuantity (D.timesDecimal d1 d2
 -- Just 2.00
 -- >>> divide (mkQuantity 0.42 :: Quantity 2) (mkQuantity (-0.21) :: Quantity 2)
 -- Just -2.00
-divide :: (KnownNat s) => Quantity s -> Quantity s -> Maybe (Quantity s)
+divide :: KnownNat s => Quantity s -> Quantity s -> Maybe (Quantity s)
 divide (MkQuantity d1) (MkQuantity d2) = MkQuantity <$> D.divideDecimalWithRounding d1 d2
 
 

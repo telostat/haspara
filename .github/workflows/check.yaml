@@ -1,0 +1,23 @@
+name: "Check, Test and Build Codebase"
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout main"
+        uses: "actions/checkout@v4"
+
+      - name: "Install Nix"
+        uses: "DeterminateSystems/nix-installer-action@v14"
+
+      - name: "Use Nix Cache"
+        uses: "DeterminateSystems/magic-nix-cache-action@v8"
+
+      - name: "Check, Test and Build"
+        run: |
+          nix-shell --pure --run "dev-test-build"

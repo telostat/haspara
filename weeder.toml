@@ -1,0 +1,12 @@
+roots = [
+  ## Definitions we always need:
+  "^Main.main$",
+  "^Haspara.*",
+  "^Haspara.Accounting.*",
+  "^Haspara.TH.*",
+  "^Paths_haspara.*",
+
+  ## Temporary suspensions:
+  "^Zamazingo.*",
+]
+type-class-roots = true
