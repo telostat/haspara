@@ -1,5 +1,27 @@
+# Changelog
+
 <a name="unreleased"></a>
 ## [Unreleased]
+
+
+<a name="0.0.0.9"></a>
+## [0.0.0.9] - 2024-10-07
+### Chore
+- reformat changelog configuration file
+- **release:** setup and document release process
+
+### Docs
+- add GitHub release step to "Making Releases" section in README
+
+### Fix
+- **deps:** update dependency boundaries, adopt new Nix shell, chores
+
+### Test
+- add GitHub action for testing
+
+### Pull Requests
+- Merge pull request [#20](https://github.com/telostat/haspara/issues/20) from telostat/19-find-a-solution-to-automate-releases
+- Merge pull request [#18](https://github.com/telostat/haspara/issues/18) from telostat/vst/revisit-nix-upgrade-deps
 
 
 <a name="0.0.0.8"></a>
@@ -8,6 +30,7 @@
 - bump development version to 0.0.0.8
 - **nix:** make it more convenient to test against different ghc versions
 - **nix:** make default haspara Nix package come with haddock
+- **release:** 0.0.0.8
 
 ### Fix
 - add explicit Aeson.ToJSON.toEncoding implementations
@@ -38,9 +61,9 @@
 <a name="0.0.0.6"></a>
 ## [0.0.0.6] - 2022-11-17
 ### Chore
+- remove stylish-haskell configuration
 - drop Stack usage
 - bump development version to 0.0.0.6
-- remove stylish-haskell configuration
 - **deps:** park library dependencies under library section
 - **docs:** update development and release procedure in README
 - **nix:** use telos.nix
@@ -90,12 +113,12 @@
 ### Feat
 - add Haspara.Accounting.Side module
 - **accounting:** improve Ledger module definitions
+- **accounting:** improve Balance module definitions
 - **accounting:** delineate value and quantity concepts wrt Amount
 - **accounting:** add Bounded instance to AccountKind
 - **accounting:** add TrialBalance definitions
 - **accounting:** add Amount and Balance definitions
 - **accounting:** improve the Haspara.Accounting.Side module
-- **accounting:** improve Balance module definitions
 
 ### Refactor
 - **accounting:** remove Event definitions, revisit exports
@@ -166,11 +189,11 @@
 ## 0.0.0.0 - 2022-03-01
 ### Chore
 - integrate git-chglog
-- init repository
 - warn about unused packages during build
 - add synopsis and category to package info
 - update copyright notice
 - init codebase
+- init repository
 - **deps:** upgrade to lts-18.17
 - **docs:** update README
 - **release:** 0.0.0.0
@@ -183,7 +206,8 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.8...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.9...HEAD
+[0.0.0.9]: https://github.com/telostat/haspara/compare/0.0.0.8...0.0.0.9
 [0.0.0.8]: https://github.com/telostat/haspara/compare/0.0.0.7...0.0.0.8
 [0.0.0.7]: https://github.com/telostat/haspara/compare/0.0.0.6...0.0.0.7
 [0.0.0.6]: https://github.com/telostat/haspara/compare/0.0.0.5...0.0.0.6
