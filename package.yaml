@@ -2,6 +2,7 @@ name: haspara
 version: 0.0.0.9
 github: "telostat/haspara"
 license: MIT
+license-file: LICENSE.md
 author: "Vehbi Sinan Tunalioglu"
 maintainer: "vst@vsthost.com"
 copyright: "Copyright (c) 2021-2024 Telostat Pte Ltd"
@@ -11,6 +12,7 @@ description: Please see the README on GitHub at <https://github.com/telostat/has
 
 extra-source-files:
   - README.md
+  - LICENSE.md
   - CHANGELOG.md
 
 dependencies:

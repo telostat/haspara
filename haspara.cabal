@@ -15,9 +15,11 @@ author:         Vehbi Sinan Tunalioglu
 maintainer:     vst@vsthost.com
 copyright:      Copyright (c) 2021-2024 Telostat Pte Ltd
 license:        MIT
+license-file:   LICENSE.md
 build-type:     Simple
 extra-source-files:
     README.md
+    LICENSE.md
     CHANGELOG.md
 
 source-repository head
