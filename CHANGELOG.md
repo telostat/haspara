@@ -4,10 +4,17 @@
 ## [Unreleased]
 
 
+<a name="0.0.0.10"></a>
+## [0.0.0.10] - 2024-10-07
+### Fix
+- **package:** add license-file descriptor to package.yaml
+
+
 <a name="0.0.0.9"></a>
 ## [0.0.0.9] - 2024-10-07
 ### Chore
 - reformat changelog configuration file
+- **release:** 0.0.0.9
 - **release:** setup and document release process
 
 ### Docs
@@ -206,7 +213,8 @@
 - Merge pull request [#1](https://github.com/telostat/haspara/issues/1) from telostat/init
 
 
-[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.9...HEAD
+[Unreleased]: https://github.com/telostat/haspara/compare/0.0.0.10...HEAD
+[0.0.0.10]: https://github.com/telostat/haspara/compare/0.0.0.9...0.0.0.10
 [0.0.0.9]: https://github.com/telostat/haspara/compare/0.0.0.8...0.0.0.9
 [0.0.0.8]: https://github.com/telostat/haspara/compare/0.0.0.7...0.0.0.8
 [0.0.0.7]: https://github.com/telostat/haspara/compare/0.0.0.6...0.0.0.7

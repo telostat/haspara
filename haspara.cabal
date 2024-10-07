@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           haspara
-version:        0.0.0.9
+version:        0.0.0.10
 synopsis:       A library providing definitions to work with monetary values.
 description:    Please see the README on GitHub at <https://github.com/telostat/haspara#readme>
 category:       Finance
