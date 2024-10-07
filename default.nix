@@ -90,6 +90,7 @@ let
       ## Other build inputs for various development requirements:
       pkgs.docker-client
       pkgs.git
+      pkgs.git-chglog
       pkgs.nil
       pkgs.nixpkgs-fmt
       pkgs.nodePackages.prettier
